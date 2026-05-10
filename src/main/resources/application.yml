@@ -1,0 +1,51 @@
+spring:
+  profiles:
+    active: dev
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: false
+  mvc:
+    view:
+      prefix: /WEB-INF/views/
+      suffix: .jsp
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USER:}
+    password: ${MAIL_PASS:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+  ldap:
+    embedded:
+      base-dn: dc=healingpresence,dc=local
+      ldif: classpath:ldap/users.ldif
+      port: 8389
+      url: ldap://localhost:8389
+      validation:
+        enabled: false
+
+server:
+  servlet:
+    session:
+      timeout: 30m
+
+app:
+  notifications:
+    to: ${APP_NOTIFY_TO:info@thehealingpresence.in}
+    from: ${APP_NOTIFY_FROM:noreply@thehealingpresence.in}
+  contact:
+    phone: "+91 8095-00-8095"
+    address: "Yelahanka, Bangalore"
+  ldap:
+    user-dn-pattern: "uid={0},ou=people"
+    group-search-base: "ou=groups"
+
+logging:
+  level:
+    com.healingpresence: INFO
+    org.springframework.web: INFO
+    org.springframework.security: INFO

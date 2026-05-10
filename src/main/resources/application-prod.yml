@@ -1,0 +1,30 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/healingpresence?useSSL=true&serverTimezone=Asia/Kolkata}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${DB_USER:healingpresence}
+    password: ${DB_PASS:}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    database-platform: org.hibernate.dialect.MySQLDialect
+  sql:
+    init:
+      mode: never
+
+server:
+  servlet:
+    session:
+      cookie:
+        secure: true
+        http-only: true
+  error:
+    whitelabel:
+      enabled: false
+
+logging:
+  level:
+    com.healingpresence: INFO
+    org.springframework: WARN
+    org.hibernate: WARN
