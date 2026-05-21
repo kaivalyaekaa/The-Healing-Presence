@@ -1,0 +1,27 @@
+# EditorConfig — keeps formatting consistent across IDEs (IntelliJ, VS Code, Eclipse).
+# Docs: https://editorconfig.org
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+# Java sources keep the 4-space block default; explicit for clarity.
+[*.java]
+indent_size = 4
+
+# Web + config files conventionally use 2-space indents.
+[*.{yml,yaml,jsp,jspf,tag,html,css,js,xml,json}]
+indent_size = 2
+
+# Markdown allows trailing whitespace as a soft line-break.
+[*.md]
+trim_trailing_whitespace = false
+
+# Makefiles require literal tabs.
+[Makefile]
+indent_style = tab

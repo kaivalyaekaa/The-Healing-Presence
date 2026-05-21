@@ -84,7 +84,7 @@ public class SecurityConfig {
                         "/contact", "/rent-our-space",
                         "/book-session", "/enquire-space",
                         "/login", "/login.html",
-                        "/css/**", "/js/**", "/images/**", "/icons/**", "/videos/**",
+                        "/css/**", "/js/**", "/images/**", "/videos/**",
                         "/favicon.ico", "/error/**"
                 ).permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
