@@ -14,12 +14,12 @@ import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.CalendarScopes;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventDateTime;
+import in.thehealingpresence.config.properties.GoogleCalendarProperties;
 import in.thehealingpresence.domain.BookingRequest;
 import in.thehealingpresence.domain.OAuthToken;
 import in.thehealingpresence.repository.OAuthTokenRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,27 +56,17 @@ public class GoogleCalendarService {
     private static final ZoneId IST = ZoneId.of("Asia/Kolkata");
 
     private final OAuthTokenRepository tokenRepository;
+    private final GoogleCalendarProperties props;
 
-    @Value("${google.calendar.client-id:}")
-    private String clientId;
-
-    @Value("${google.calendar.client-secret:}")
-    private String clientSecret;
-
-    @Value("${google.calendar.calendar-id:primary}")
-    private String calendarId;
-
-    @Value("${google.calendar.redirect-uri:http://localhost:8080/admin/google-calendar/callback}")
-    private String redirectUri;
-
-    public GoogleCalendarService(OAuthTokenRepository tokenRepository) {
+    public GoogleCalendarService(OAuthTokenRepository tokenRepository,
+                                 GoogleCalendarProperties props) {
         this.tokenRepository = tokenRepository;
+        this.props = props;
     }
 
     /** True if Google Cloud credentials are present in env. */
     public boolean isConfigured() {
-        return clientId != null && !clientId.isBlank()
-                && clientSecret != null && !clientSecret.isBlank();
+        return props.isConfigured();
     }
 
     /** True if Upma has completed the OAuth consent flow. */
@@ -103,7 +93,7 @@ public class GoogleCalendarService {
         try {
             GoogleAuthorizationCodeFlow flow = buildFlow(scopes);
             AuthorizationCodeRequestUrl url = flow.newAuthorizationUrl()
-                    .setRedirectUri(redirectUri)
+                    .setRedirectUri(props.redirectUri())
                     .setAccessType("offline")        // need a refresh token
                     .set("prompt", "consent");       // force refresh_token even if previously granted
             return url.build();
@@ -122,10 +112,10 @@ public class GoogleCalendarService {
             TokenResponse response = new GoogleAuthorizationCodeTokenRequest(
                     new NetHttpTransport(),
                     GsonFactory.getDefaultInstance(),
-                    clientId,
-                    clientSecret,
+                    props.clientId(),
+                    props.clientSecret(),
                     code,
-                    redirectUri
+                    props.redirectUri()
             ).execute();
 
             OAuthToken token = tokenRepository.findByProvider(PROVIDER_KEY)
@@ -141,16 +131,16 @@ public class GoogleCalendarService {
             tokenRepository.save(token);
             log.info("Stored Google Calendar refresh token (scope={})", response.getScope());
 
-            // G9: verify the configured calendarId actually resolves with this token.
+            // G9: verify the configured calendar id actually resolves with this token.
             // A typo in GOOGLE_CALENDAR_ID would otherwise silently fail every push.
             try {
                 Calendar calendar = buildCalendarClient();
-                calendar.calendars().get(calendarId).execute();
-                log.info("Verified Google Calendar id '{}' is reachable.", calendarId);
+                calendar.calendars().get(props.calendarId()).execute();
+                log.info("Verified Google Calendar id '{}' is reachable.", props.calendarId());
             } catch (Exception verifyEx) {
-                log.warn("Google Calendar id '{}' could not be verified: {}", calendarId, verifyEx.getMessage());
+                log.warn("Google Calendar id '{}' could not be verified: {}", props.calendarId(), verifyEx.getMessage());
                 throw new IllegalStateException(
-                        "Calendar id '" + calendarId + "' is not accessible with the consenting user's account. "
+                        "Calendar id '" + props.calendarId() + "' is not accessible with the consenting user's account. "
                                 + "Check GOOGLE_CALENDAR_ID. Original error: " + verifyEx.getMessage(), verifyEx);
             }
         } catch (IOException e) {
@@ -179,7 +169,7 @@ public class GoogleCalendarService {
                     .setStart(toEventDateTime(booking.getSlotStart()))
                     .setEnd(toEventDateTime(booking.getSlotEnd()));
 
-            Event created = calendar.events().insert(calendarId, event).execute();
+            Event created = calendar.events().insert(props.calendarId(), event).execute();
             log.info("Pushed booking {} to Google Calendar as event {}", booking.getId(), created.getId());
             return created.getId();
         } catch (Exception e) {
@@ -195,7 +185,7 @@ public class GoogleCalendarService {
         }
         try {
             Calendar calendar = buildCalendarClient();
-            calendar.events().delete(calendarId, eventId).execute();
+            calendar.events().delete(props.calendarId(), eventId).execute();
             log.info("Deleted Google Calendar event {}", eventId);
         } catch (Exception e) {
             log.warn("Failed to delete Google Calendar event {}: {}", eventId, e.getMessage());
@@ -206,8 +196,8 @@ public class GoogleCalendarService {
 
     private GoogleAuthorizationCodeFlow buildFlow(List<String> scopes) throws GeneralSecurityException, IOException {
         GoogleClientSecrets.Details details = new GoogleClientSecrets.Details()
-                .setClientId(clientId)
-                .setClientSecret(clientSecret);
+                .setClientId(props.clientId())
+                .setClientSecret(props.clientSecret());
         // Web-application OAuth flow only — no .setInstalled().
         GoogleClientSecrets secrets = new GoogleClientSecrets().setWeb(details);
         return new GoogleAuthorizationCodeFlow.Builder(
@@ -225,7 +215,7 @@ public class GoogleCalendarService {
         Credential credential = new GoogleCredential.Builder()
                 .setTransport(GoogleNetHttpTransport.newTrustedTransport())
                 .setJsonFactory(GsonFactory.getDefaultInstance())
-                .setClientSecrets(clientId, clientSecret)
+                .setClientSecrets(props.clientId(), props.clientSecret())
                 .build()
                 .setRefreshToken(stored.getRefreshToken());
 

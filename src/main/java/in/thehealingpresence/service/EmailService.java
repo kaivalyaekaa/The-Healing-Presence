@@ -1,11 +1,11 @@
 package in.thehealingpresence.service;
 
+import in.thehealingpresence.config.properties.NotificationProperties;
 import in.thehealingpresence.domain.BookingRequest;
 import in.thehealingpresence.domain.ContactSubmission;
 import in.thehealingpresence.domain.SpaceEnquiry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
@@ -17,20 +17,16 @@ public class EmailService {
     private static final Logger log = LoggerFactory.getLogger(EmailService.class);
 
     private final JavaMailSender mailSender;
+    private final NotificationProperties notifyProps;
 
-    @Value("${app.notifications.to}")
-    private String adminEmail;
-
-    @Value("${app.notifications.from}")
-    private String fromEmail;
-
-    public EmailService(JavaMailSender mailSender) {
+    public EmailService(JavaMailSender mailSender, NotificationProperties notifyProps) {
         this.mailSender = mailSender;
+        this.notifyProps = notifyProps;
     }
 
     @Async
     public void notifyAdmin(ContactSubmission s) {
-        send(adminEmail,
+        send(notifyProps.to(),
                 "New Contact Submission from " + s.getFirstName(),
                 "New contact form submission received:\n\n" +
                         "Name: " + s.getFirstName() + " " + nullSafe(s.getLastName()) + "\n" +
@@ -41,7 +37,7 @@ public class EmailService {
 
     @Async
     public void notifyAdmin(BookingRequest r) {
-        send(adminEmail,
+        send(notifyProps.to(),
                 "New Session Booking from " + r.getName(),
                 "New session booking received:\n\n" +
                         "Name: " + r.getName() + "\n" +
@@ -54,7 +50,7 @@ public class EmailService {
 
     @Async
     public void notifyAdmin(SpaceEnquiry e) {
-        send(adminEmail,
+        send(notifyProps.to(),
                 "New Space Enquiry from " + e.getName(),
                 "New space rental enquiry received:\n\n" +
                         "Name: " + e.getName() + "\n" +
@@ -81,7 +77,7 @@ public class EmailService {
     private void send(String to, String subject, String body) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(fromEmail);
+            message.setFrom(notifyProps.from());
             message.setTo(to);
             message.setSubject(subject);
             message.setText(body);

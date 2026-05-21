@@ -1,7 +1,7 @@
 package in.thehealingpresence.config;
 
+import in.thehealingpresence.config.properties.LdapProperties;
 import jakarta.servlet.DispatcherType;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -22,17 +22,17 @@ import java.util.Set;
 @Profile("!test")
 public class SecurityConfig {
 
-    @Value("${spring.ldap.embedded.url}")
-    private String ldapUrl;
+    private final LdapProperties ldapProps;
 
-    @Value("${spring.ldap.embedded.base-dn}")
-    private String baseDn;
+    public SecurityConfig(LdapProperties ldapProps) {
+        this.ldapProps = ldapProps;
+    }
 
     @Bean
     public BaseLdapPathContextSource contextSource() {
         LdapContextSource source = new LdapContextSource();
-        source.setUrl(ldapUrl);
-        source.setBase(baseDn);
+        source.setUrl(ldapProps.url());
+        source.setBase(ldapProps.baseDn());
         source.setAnonymousReadOnly(true);
         source.afterPropertiesSet();
         return source;
