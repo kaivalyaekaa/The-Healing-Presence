@@ -1,5 +1,6 @@
 package in.thehealingpresence.service;
 
+import in.thehealingpresence.booking.domain.Booking;
 import in.thehealingpresence.config.properties.NotificationProperties;
 import in.thehealingpresence.domain.BookingRequest;
 import in.thehealingpresence.domain.ContactSubmission;
@@ -46,6 +47,21 @@ public class EmailService {
                         "Therapy type: " + nullSafe(r.getTherapyType()) + "\n" +
                         "Preferred date: " + nullSafe(r.getPreferredDate()) + "\n" +
                         "Notes:\n" + nullSafe(r.getNotes()));
+    }
+
+    @Async
+    public void notifyAdmin(Booking b) {
+        String preferredDate = b.slotStart().format(
+                java.time.format.DateTimeFormatter.ofPattern("EEE, d MMM yyyy 'at' h:mm a"));
+        send(notifyProps.to(),
+                "New Receptionist Booking from " + b.clientName(),
+                "New receptionist booking received:\n\n" +
+                        "Name: " + b.clientName() + "\n" +
+                        "Email: " + b.clientEmail() + "\n" +
+                        "Phone: " + nullSafe(b.clientPhone()) + "\n" +
+                        "Therapy: " + b.therapyType().display() + "\n" +
+                        "Slot: " + preferredDate + " (" + b.durationHours() + "h)\n" +
+                        "Notes:\n" + nullSafe(b.notes()));
     }
 
     @Async

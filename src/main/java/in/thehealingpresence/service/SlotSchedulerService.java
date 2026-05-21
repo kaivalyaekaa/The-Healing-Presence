@@ -1,10 +1,11 @@
 package in.thehealingpresence.service;
 
+import in.thehealingpresence.booking.BookingMapper;
+import in.thehealingpresence.booking.event.BookingCreatedEvent;
 import in.thehealingpresence.domain.BookingRequest;
 import in.thehealingpresence.domain.BookingSource;
 import in.thehealingpresence.domain.SubmissionStatus;
 import in.thehealingpresence.dto.ReceptionistBookingDto;
-import in.thehealingpresence.event.BookingSubmittedEvent;
 import in.thehealingpresence.repository.BookingRequestRepository;
 import in.thehealingpresence.scheduler.OfficeHours;
 import in.thehealingpresence.scheduler.TimeSlot;
@@ -226,7 +227,8 @@ public class SlotSchedulerService {
                 java.time.format.DateTimeFormatter.ofPattern("EEE, d MMM yyyy 'at' h:mm a")));
 
         BookingRequest saved = bookingRepository.save(b);
-        eventPublisher.publishEvent(new BookingSubmittedEvent(saved));
+        // Publish the domain event (carries Booking, not BookingRequest) so listeners stay persistence-ignorant.
+        eventPublisher.publishEvent(new BookingCreatedEvent(BookingMapper.toDomain(saved)));
         return saved;
     }
 
