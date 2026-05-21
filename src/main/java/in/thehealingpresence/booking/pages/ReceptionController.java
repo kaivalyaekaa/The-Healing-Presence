@@ -1,4 +1,4 @@
-package in.thehealingpresence.controller;
+package in.thehealingpresence.booking.pages;
 
 import in.thehealingpresence.domain.BookingRequest;
 import in.thehealingpresence.dto.ReceptionistBookingDto;

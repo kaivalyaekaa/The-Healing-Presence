@@ -1,4 +1,4 @@
-package in.thehealingpresence.controller;
+package in.thehealingpresence.content;
 
 import in.thehealingpresence.TestSecurityConfig;
 import in.thehealingpresence.service.ContentService;
@@ -13,7 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(HomeController.class)
+@WebMvcTest(PageController.class)
 @Import(TestSecurityConfig.class)
 @ActiveProfiles("test")
 class HomeControllerTest {

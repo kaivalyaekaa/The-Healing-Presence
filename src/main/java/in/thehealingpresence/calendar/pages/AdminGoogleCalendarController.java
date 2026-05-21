@@ -1,4 +1,4 @@
-package in.thehealingpresence.controller;
+package in.thehealingpresence.calendar.pages;
 
 import in.thehealingpresence.calendar.CalendarPort;
 import in.thehealingpresence.calendar.domain.OAuthToken;

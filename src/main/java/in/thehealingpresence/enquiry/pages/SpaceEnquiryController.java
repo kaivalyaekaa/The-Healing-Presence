@@ -1,4 +1,4 @@
-package in.thehealingpresence.controller;
+package in.thehealingpresence.enquiry.pages;
 
 import in.thehealingpresence.dto.EnquiryFormDto;
 import in.thehealingpresence.service.EnquiryService;
@@ -18,11 +18,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Controller
-public class EnquiryController {
+public class SpaceEnquiryController {
 
     private final EnquiryService enquiryService;
 
-    public EnquiryController(EnquiryService enquiryService) {
+    public SpaceEnquiryController(EnquiryService enquiryService) {
         this.enquiryService = enquiryService;
     }
 

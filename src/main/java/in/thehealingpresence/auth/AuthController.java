@@ -1,4 +1,4 @@
-package in.thehealingpresence.controller;
+package in.thehealingpresence.auth;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;

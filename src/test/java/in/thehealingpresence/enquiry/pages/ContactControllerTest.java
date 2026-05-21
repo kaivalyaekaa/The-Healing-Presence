@@ -1,4 +1,4 @@
-package in.thehealingpresence.controller;
+package in.thehealingpresence.enquiry.pages;
 
 import in.thehealingpresence.TestSecurityConfig;
 import in.thehealingpresence.service.ContactService;

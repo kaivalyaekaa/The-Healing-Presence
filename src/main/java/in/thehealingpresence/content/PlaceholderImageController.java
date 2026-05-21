@@ -1,4 +1,4 @@
-package in.thehealingpresence.controller;
+package in.thehealingpresence.content;
 
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ClassPathResource;
@@ -31,7 +31,7 @@ import java.io.InputStream;
  */
 @RestController
 @Profile("dev")
-public class DevImageFallbackController {
+public class PlaceholderImageController {
 
     @GetMapping("/images/{filename:.+}")
     public ResponseEntity<byte[]> serveImage(@PathVariable("filename") String filename) throws Exception {
