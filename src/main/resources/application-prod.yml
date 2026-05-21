@@ -5,10 +5,12 @@ spring:
     username: ${DB_USER:thp_app}
     password: ${DB_PASS:}
   jpa:
-    # Flyway owns schema changes; Hibernate just validates the entity model
-    # matches the migrated tables.
+    # Phase 2 rebuild: Flyway stripped. Hibernate owns schema in dev; in prod
+    # operators should pin JPA_DDL_AUTO=validate and run schema migrations
+    # manually until Flyway is re-introduced (see REBUILD.md at branch root).
     hibernate:
-      ddl-auto: ${JPA_DDL_AUTO:validate}
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    defer-datasource-initialization: true
     show-sql: false
     properties:
       hibernate:
@@ -16,7 +18,7 @@ spring:
         jdbc.time_zone: Asia/Kolkata
   sql:
     init:
-      mode: never
+      mode: ${SQL_INIT_MODE:always}
 
 google:
   calendar:

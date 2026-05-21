@@ -6,12 +6,13 @@ spring:
     password: ${DB_PASS:root}
   jpa:
     hibernate:
-      ddl-auto: validate     # Flyway owns the schema; Hibernate just validates it matches
+      ddl-auto: update       # Hibernate creates/updates schema from entities (Flyway stripped in Phase 2 rebuild)
+    defer-datasource-initialization: true   # run data.sql after Hibernate creates tables
     show-sql: true
     database-platform: org.hibernate.dialect.MySQLDialect
   sql:
     init:
-      mode: never            # Flyway is the only schema/data initialiser now
+      mode: always           # seed via data.sql on every boot (idempotent via DELETE+INSERT)
   devtools:
     restart:
       enabled: true
