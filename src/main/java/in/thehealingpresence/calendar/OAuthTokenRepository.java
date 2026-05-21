@@ -1,6 +1,6 @@
-package in.thehealingpresence.repository;
+package in.thehealingpresence.calendar;
 
-import in.thehealingpresence.domain.OAuthToken;
+import in.thehealingpresence.calendar.domain.OAuthToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

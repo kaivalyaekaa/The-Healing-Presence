@@ -5,7 +5,7 @@ import in.thehealingpresence.dto.ReceptionistBookingDto;
 import in.thehealingpresence.repository.BookingRequestRepository;
 import in.thehealingpresence.scheduler.OfficeHours;
 import in.thehealingpresence.scheduler.TimeSlot;
-import in.thehealingpresence.service.GoogleCalendarService;
+import in.thehealingpresence.calendar.CalendarPort;
 import in.thehealingpresence.service.SlotSchedulerService;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -40,14 +40,14 @@ public class ReceptionController {
 
     private final SlotSchedulerService scheduler;
     private final BookingRequestRepository bookingRepository;
-    private final GoogleCalendarService googleCalendarService;
+    private final CalendarPort calendar;
 
     public ReceptionController(SlotSchedulerService scheduler,
                                BookingRequestRepository bookingRepository,
-                               GoogleCalendarService googleCalendarService) {
+                               CalendarPort calendar) {
         this.scheduler = scheduler;
         this.bookingRepository = bookingRepository;
-        this.googleCalendarService = googleCalendarService;
+        this.calendar = calendar;
     }
 
     // ------------------------------------------------------------ day-grid view --
@@ -171,7 +171,7 @@ public class ReceptionController {
                     "Cancelled booking for " + b.getName() + ".");
             // Best-effort: also remove the matching Google Calendar event.
             if (b.getGoogleEventId() != null && !b.getGoogleEventId().isBlank()) {
-                googleCalendarService.deleteEvent(b.getGoogleEventId());
+                calendar.deleteEvent(b.getGoogleEventId());
             }
         });
         BookingRequest b = bookingRepository.findById(id).orElse(null);

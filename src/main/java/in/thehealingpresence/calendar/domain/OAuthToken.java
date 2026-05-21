@@ -1,4 +1,4 @@
-package in.thehealingpresence.domain;
+package in.thehealingpresence.calendar.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

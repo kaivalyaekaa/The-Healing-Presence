@@ -1,12 +1,16 @@
 package in.thehealingpresence.event;
 
+import in.thehealingpresence.booking.BookingMapper;
+import in.thehealingpresence.booking.domain.Booking;
+import in.thehealingpresence.calendar.CalendarPort;
 import in.thehealingpresence.domain.BookingRequest;
 import in.thehealingpresence.domain.BookingSource;
 import in.thehealingpresence.domain.ContactSubmission;
 import in.thehealingpresence.domain.SpaceEnquiry;
 import in.thehealingpresence.repository.BookingRequestRepository;
 import in.thehealingpresence.service.EmailService;
-import in.thehealingpresence.service.GoogleCalendarService;
+
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -30,14 +34,14 @@ public class EmailNotificationListener {
     private static final Logger log = LoggerFactory.getLogger(EmailNotificationListener.class);
 
     private final EmailService emailService;
-    private final GoogleCalendarService googleCalendarService;
+    private final CalendarPort calendar;
     private final BookingRequestRepository bookingRepository;
 
     public EmailNotificationListener(EmailService emailService,
-                                     GoogleCalendarService googleCalendarService,
+                                     CalendarPort calendar,
                                      BookingRequestRepository bookingRepository) {
         this.emailService = emailService;
-        this.googleCalendarService = googleCalendarService;
+        this.calendar = calendar;
         this.bookingRepository = bookingRepository;
     }
 
@@ -58,9 +62,10 @@ public class EmailNotificationListener {
         if (r.getBookingSource() == BookingSource.RECEPTIONIST
                 && r.getSlotStart() != null && r.getSlotEnd() != null) {
             try {
-                String eventId = googleCalendarService.pushEvent(r);
-                if (eventId != null && !eventId.isBlank()) {
-                    r.setGoogleEventId(eventId);
+                Booking domain = BookingMapper.toDomain(r);
+                Optional<String> eventId = calendar.pushBooking(domain);
+                eventId.ifPresent(id -> {
+                    r.setGoogleEventId(id);
                     try {
                         bookingRepository.save(r);
                     } catch (Exception saveEx) {
@@ -68,9 +73,9 @@ public class EmailNotificationListener {
                         // to persist the Google event id. Failure leaves googleEventId=null —
                         // visible in the admin booking-detail view. ERROR so it shows up in logs.
                         log.error("Could not persist googleEventId for booking {} (calendar event {} created OK, but db update failed): {}",
-                                r.getId(), eventId, saveEx.getMessage(), saveEx);
+                                r.getId(), id, saveEx.getMessage(), saveEx);
                     }
-                }
+                });
             } catch (Exception e) {
                 log.error("Google Calendar push failed for booking {} ({}): {}",
                         r.getId(), r.getName(), e.getMessage(), e);

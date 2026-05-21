@@ -1,7 +1,7 @@
 package in.thehealingpresence.controller;
 
-import in.thehealingpresence.domain.OAuthToken;
-import in.thehealingpresence.service.GoogleCalendarService;
+import in.thehealingpresence.calendar.CalendarPort;
+import in.thehealingpresence.calendar.domain.OAuthToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,27 +14,28 @@ import java.util.Optional;
 /**
  * Admin-only endpoints for the one-time Google Calendar OAuth dance.
  * Gated by {@code /admin/**} → {@code hasRole('ADMIN')} in SecurityConfig.
+ * Depends on the {@link CalendarPort} interface, not the concrete adapter.
  */
 @Controller
 @RequestMapping("/admin/google-calendar")
 public class AdminGoogleCalendarController {
 
-    private final GoogleCalendarService googleCalendarService;
+    private final CalendarPort calendar;
 
-    public AdminGoogleCalendarController(GoogleCalendarService googleCalendarService) {
-        this.googleCalendarService = googleCalendarService;
+    public AdminGoogleCalendarController(CalendarPort calendar) {
+        this.calendar = calendar;
     }
 
     @GetMapping
     public String status(Model model,
                          @RequestParam(name = "connected", required = false) Boolean justConnected,
                          @RequestParam(name = "error", required = false) String error) {
-        model.addAttribute("configured", googleCalendarService.isConfigured());
-        model.addAttribute("connected", googleCalendarService.isConnected());
+        model.addAttribute("configured", calendar.isConfigured());
+        model.addAttribute("connected", calendar.isConnected());
         model.addAttribute("justConnected", Boolean.TRUE.equals(justConnected));
         model.addAttribute("error", error);
 
-        Optional<OAuthToken> token = googleCalendarService.getStoredToken();
+        Optional<OAuthToken> token = calendar.getStoredToken();
         token.ifPresent(t -> {
             model.addAttribute("connectedAt", t.getUpdatedAt() != null ? t.getUpdatedAt() : t.getCreatedAt());
             model.addAttribute("scope", t.getScope());
@@ -45,7 +46,7 @@ public class AdminGoogleCalendarController {
 
     @GetMapping("/connect")
     public RedirectView connect() {
-        String url = googleCalendarService.buildAuthorizationUrl();
+        String url = calendar.buildAuthorizationUrl();
         return new RedirectView(url);
     }
 
@@ -59,7 +60,7 @@ public class AdminGoogleCalendarController {
             return new RedirectView("/admin/google-calendar?error=missing_code");
         }
         try {
-            googleCalendarService.exchangeCode(code);
+            calendar.completeAuthorization(code);
             return new RedirectView("/admin/google-calendar?connected=true");
         } catch (Exception e) {
             return new RedirectView("/admin/google-calendar?error=exchange_failed");
