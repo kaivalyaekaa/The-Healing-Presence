@@ -1,196 +1,166 @@
-# Deploying The Healing Presence to Oracle Cloud Always Free
+# Hosting The Healing Presence — free-tier options
 
-A step-by-step runbook for putting this Spring Boot app on a free, always-on
-Oracle Cloud Ampere VM with HTTPS and MySQL. Total time: ~30 minutes for the
-first run; ~2 minutes per redeploy after that.
+A working app needs three things: a Java 21 runtime that's always-on, a MySQL database, and HTTPS. As of May 2026 these are the realistic options:
+
+## Recommended for the client demo: **Render** ✅
+
+**Why Render** — easiest "connect GitHub, push, get URL" experience for Spring Boot. No credit card needed for the free tier; auto HTTPS; auto-redeploy on every push to `main`.
+
+**Caveats** — Render's free web service spins down after 15 min idle (cold-start adds 30-60s on the next request). Their free database tier is **PostgreSQL only**, so you have two sub-options:
+
+| Sub-option | What changes | Effort |
+|---|---|---|
+| **A. Switch to PostgreSQL on Render** | Add `org.postgresql:postgresql` dependency; change `spring.jpa.database-platform` to `PostgreSQLDialect`; change connection URL. Hibernate `ddl-auto: update` handles the schema on first boot. | ~30 min |
+| **B. Keep MySQL, host the DB on Aiven** | Aiven offers a 1-month MySQL free trial (then $19/mo). Render runs the Spring Boot WAR; Aiven runs MySQL. | ~20 min, DB costs after month 1 |
+
+**Steps (Sub-option A — recommended):**
+1. Sign up at https://render.com using GitHub.
+2. **New > Web Service** → pick the `kaivalyaekaa/The-Healing-Presence` repo.
+3. Runtime: Java 21. Build command: `./mvnw -DskipTests package`. Start command: `java -jar target/healing-presence.war`.
+4. Add env vars: `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `MAIL_USER`, `MAIL_PASS`, `APP_NOTIFY_TO`, `APP_NOTIFY_FROM`, `SPRING_PROFILES_ACTIVE=prod`.
+5. **New > PostgreSQL** → free plan → attach to the web service (Render injects `DATABASE_URL`).
+6. Push to `main` → first deploy completes in 5-10 min; you get `https://healing-presence.onrender.com` with TLS.
+
+## Best long-term if you want MySQL + always-on: **Oracle Cloud Always Free** 🏆
+
+24 GB RAM Ampere A1 VM, always-on, MySQL 8 included, free forever (no time limit). Requires credit-card verification at signup (no charge). End-to-end runbook below (originally `HOSTING.md` v1).
+
+## Other free tiers (worth knowing)
+
+| Provider | Free tier | Spring Boot fit | MySQL? |
+|---|---|---|---|
+| **Fly.io** | 3 small machines, 256 MB RAM each | Good (Dockerfile-based) | No — Fly Postgres only |
+| **Koyeb** | 1 nano service free, 512 MB, no sleep | Good | No — external |
+| **Northflank** | Hobby plan with 1 service | Good | Self-managed container |
+| **AWS Free Tier** | t2.micro 12 months | Tight (1 GB RAM) | RDS MySQL 12 months free |
+| **GCP Free Tier** | e2-micro always free | Tight (1 GB shared) | Cloud SQL is paid |
+| **Heroku** | ❌ Free tier removed in 2022 | — | — |
+| **Railway** | ❌ Removed free tier in 2023 | — | — |
+
+## Bottom line
+
+- **For the client demo this week**: deploy to **Render with PostgreSQL** (sub-option A). Fastest, no DNS hassle.
+- **For the production cut-over**: migrate to **Oracle Cloud Always Free** with MySQL (instructions further down).
 
 ---
 
-## 1. Sign up for Oracle Cloud (free tier)
+# Google Calendar integration setup
 
-1. Go to https://www.oracle.com/cloud/free/
-2. Click **Start for free** → fill in details (a credit card is required for
-   identity verification but **will not be charged** unless you upgrade out of
-   the free tier).
-3. Pick the **home region** carefully — it cannot be changed later. For India
-   the best is **Mumbai (ap-mumbai-1)** or **Hyderabad (ap-hyderabad-1)**.
-4. Verify your phone + email and finish.
+The `CalendarPort` adapter no-ops when `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` are unset (default in dev). To make `/admin/google-calendar/connect` actually work, do the one-time setup below.
 
-## 2. Create an "Ampere A1" VM (the free-forever one)
+## One-time setup (per environment)
 
-> Oracle's Always Free tier gives you up to **4 OCPUs + 24 GB RAM** on
-> ARM Ampere VMs. We'll use **2 OCPU / 12 GB** which is more than enough.
+1. **Create a Google Cloud project** at https://console.cloud.google.com/projectcreate (project name doesn't matter — only you see it).
 
-1. From the Oracle Cloud Console: **Menu → Compute → Instances**
-2. Click **Create instance**.
-3. Settings:
-   - Name: `healing-presence-prod`
-   - Image: **Canonical Ubuntu 22.04** (under "Change image")
-   - Shape: **Change shape → Ampere → VM.Standard.A1.Flex**
-   - OCPUs: 2; Memory: 12 GB (well within Always Free)
-   - Networking: leave defaults (creates a VCN + public subnet)
-   - SSH keys: **Generate a key pair for me** → download both files and keep
-     them safe. You'll need the `.key` private key to SSH in.
-4. Click **Create**. Wait ~1 minute. Copy the **public IP address** from the
-   instance detail page.
+2. **Enable the Google Calendar API**: APIs & Services > Library > "Google Calendar API" > Enable.
 
-## 3. Open ports 80 and 443 on the Security List
+3. **Configure the OAuth consent screen**:
+   - User type: **External** (so Upma's personal Gmail can authorise)
+   - App name: `The Healing Presence`
+   - User support email + developer contact: yours
+   - Authorised domains: blank for dev; `thehealingpresence.in` for prod
+   - Scopes: `https://www.googleapis.com/auth/calendar.events`
+   - **Test users**: add Upma's Gmail address — only test users can complete the flow until you publish
 
-Oracle Cloud's default Security List only opens port 22 (SSH). We need 80 + 443
-for Caddy / Let's Encrypt.
+4. **Create OAuth 2.0 credentials**:
+   - APIs & Services > Credentials > Create credentials > **OAuth client ID**
+   - Application type: **Web application**
+   - Authorised redirect URIs:
+     - `http://localhost:8080/admin/google-calendar/callback` (dev)
+     - `https://<your-render-url>/admin/google-calendar/callback` (prod)
+   - Click Create → copy the **Client ID** and **Client Secret**
 
-1. **Networking → Virtual Cloud Networks** → click your VCN
-2. → **Security Lists** → click the default Security List
-3. → **Add Ingress Rules** with:
-   - Source CIDR: `0.0.0.0/0`, Destination port: `80`
-   - Source CIDR: `0.0.0.0/0`, Destination port: `443`
-
-## 4. SSH in + run the setup script
-
-From your laptop:
-
-```bash
-chmod 600 ~/Downloads/healing-presence-prod.key
-ssh -i ~/Downloads/healing-presence-prod.key ubuntu@<PUBLIC_IP>
-```
-
-Once on the VM:
-
-```bash
-curl -sLO https://raw.githubusercontent.com/kaivalyaekaa/The-Healing-Presence/jsp-rebuild/deploy/setup-oracle.sh
-curl -sLO https://raw.githubusercontent.com/kaivalyaekaa/The-Healing-Presence/jsp-rebuild/deploy/healing-presence.service
-curl -sLO https://raw.githubusercontent.com/kaivalyaekaa/The-Healing-Presence/jsp-rebuild/deploy/Caddyfile
-chmod +x setup-oracle.sh
-sudo bash setup-oracle.sh
-```
-
-The script will:
-- Install Java 21, MySQL 8, Caddy
-- Create the `healingpresence` database + `thp_app` MySQL user (random password
-  is generated and written to `/etc/healing-presence.env`)
-- Create the `thp` system user and `/opt/healingpresence/`
-- Drop in the systemd unit + Caddyfile
-- Enable UFW (ports 22, 80, 443 only)
-
-When it finishes, the script prints next-steps. **Read them.**
-
-## 5. Upload the WAR + start the service
-
-From your **laptop** (project root):
-
-```bash
-export VM_IP=<PUBLIC_IP>
-export VM_USER=ubuntu
-bash deploy/redeploy.sh
-```
-
-This packages the WAR with Maven, scps it to the VM, and restarts the systemd
-service.
-
-On the **VM**, edit `/etc/healing-presence.env` and fill in real secrets:
-
-```bash
-sudo nano /etc/healing-presence.env
-# Required: MAIL_USER, MAIL_PASS (for contact form notifications)
-# Required for receptionist→Google Calendar push: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
-# (See Section 7 below for the Google Cloud setup)
-```
-
-Then restart:
-
-```bash
-sudo systemctl restart healing-presence
-sudo systemctl status healing-presence
-```
-
-Tail logs to confirm Tomcat started:
-
-```bash
-sudo journalctl -u healing-presence -f
-```
-
-You should see `Started HealingPresenceApplication in N.NNN seconds`.
-
-## 6. Point your domain at the VM
-
-In your DNS provider (GoDaddy / Cloudflare / wherever `thehealingpresence.in`
-is registered), create / update the A record:
-
-| Type | Host | Value |
-|------|------|-------|
-| A | `@` (or `www`) | `<PUBLIC_IP>` |
-| A | `www` | `<PUBLIC_IP>` |
-
-Wait 5–30 minutes for DNS propagation.
-
-Then update Caddyfile on the VM to use the real domain instead of the
-`.nip.io` placeholder:
-
-```bash
-sudo nano /etc/caddy/Caddyfile
-# change the first line from "<IP>.nip.io {" to "thehealingpresence.in, www.thehealingpresence.in {"
-sudo systemctl reload caddy
-```
-
-Caddy will auto-provision Let's Encrypt HTTPS certificates within seconds.
-
-Verify:
-```bash
-curl -I https://thehealingpresence.in/
-# HTTP/2 200, valid TLS cert
-```
-
-## 7. Connect Google Calendar (one-time, by Upma or Admin)
-
-1. Go to https://console.cloud.google.com → create a new project
-   (`The Healing Presence`).
-2. **APIs & Services → Library** → enable **Google Calendar API**.
-3. **APIs & Services → OAuth consent screen** → External, fill in app name +
-   user-support email + developer contact. Add your domain. Add the scope
-   `https://www.googleapis.com/auth/calendar.events`.
-4. **Credentials → Create credentials → OAuth client ID** → Web application:
-   - Authorised JavaScript origins: `https://thehealingpresence.in`
-   - Authorised redirect URIs: `https://thehealingpresence.in/admin/google-calendar/callback`
-     and (for local dev) `http://localhost:8080/admin/google-calendar/callback`
-5. Copy the Client ID + Client Secret. On the VM:
-   ```bash
-   sudo nano /etc/healing-presence.env
-   # Paste GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET
-   sudo systemctl restart healing-presence
+5. **Set env vars and restart**:
    ```
-6. Sign in to the app as `admin` → visit `/admin/google-calendar` → click
-   **Connect Google Calendar** → sign in with **Upma's** Google account → consent.
-7. Test by creating a receptionist booking and checking Upma's Google Calendar.
+   GOOGLE_CLIENT_ID=<paste>
+   GOOGLE_CLIENT_SECRET=<paste>
+   GOOGLE_CALENDAR_ID=primary
+   GOOGLE_REDIRECT_URI=<same URL as registered>
+   ```
 
-## 8. Day-to-day operations
-
-| Task | Command |
-|------|---------|
-| Deploy new build | `VM_IP=… bash deploy/redeploy.sh` (from laptop) |
-| Tail logs | `sudo journalctl -u healing-presence -f` |
-| Restart app only | `sudo systemctl restart healing-presence` |
-| Reload Caddy config | `sudo systemctl reload caddy` |
-| MySQL CLI | `mysql -u root healingpresence` |
-| Free disk check | `df -h` |
-| Free RAM check | `free -h` |
-| Check active sessions | `sudo journalctl -u healing-presence --since "1 hour ago" \| grep -i login` |
+6. **Complete the OAuth dance once**:
+   - Sign in as `admin` → visit `/admin/google-calendar` → **Connect Google Calendar**
+   - Google's consent screen → sign in as **Upma** (the test user from step 3) → grant scope
+   - Browser returns to `/admin/google-calendar?connected=true`
+   - Refresh token stored in `oauth_tokens`; every receptionist booking thereafter auto-pushes to Upma's calendar
 
 ## Troubleshooting
 
-**"Cannot connect to MySQL"**
-- Check service: `sudo systemctl status mysql`
-- Check creds: `cat /etc/healing-presence.env | grep DB_`
-- Test DSN: `mysql -u thp_app -p<pass> healingpresence -e "SELECT 1;"`
+- **"Google hasn't verified this app"** during consent → expected; click **Advanced > Go to The Healing Presence (unsafe)**. Goes away once you publish the consent screen.
+- **Redirect URI mismatch** → the URL must match step 4 **exactly** (scheme, host, port, path).
+- **Token expired/revoked** → re-run step 6; the new refresh token overwrites `oauth_tokens`.
+- **Wrong calendar** → set `GOOGLE_CALENDAR_ID` to Upma's specific calendar id (Calendar Settings > "Integrate calendar" > "Calendar ID").
 
-**"Caddy can't get a Let's Encrypt cert"**
-- DNS not pointing at the VM yet — wait + check `dig thehealingpresence.in`.
-- Port 80 or 443 blocked — re-check Oracle Cloud Security List.
+---
 
-**"App boots but I see 502 from Caddy"**
-- App not listening on 8080 yet — give it 30 s after restart.
-- Or MySQL connection failed — check `journalctl -u healing-presence`.
+# Deploying The Healing Presence to Oracle Cloud Always Free
 
-**"Out of memory"**
-- Edit `/etc/systemd/system/healing-presence.service`, raise `-Xmx512m`
-  to `-Xmx768m` or `-Xmx1g` (you have 12 GB RAM, plenty of headroom).
-- `sudo systemctl daemon-reload && sudo systemctl restart healing-presence`.
+A step-by-step runbook for putting this Spring Boot app on a free, always-on Oracle Cloud Ampere VM with HTTPS and MySQL. Total time: ~30 minutes first run; ~2 minutes per redeploy.
+
+## 1. Sign up for Oracle Cloud (free tier)
+
+1. https://signup.cloud.oracle.com → email + payment-card verification (no charge)
+2. Choose **home region** carefully (Mumbai/Singapore/Hyderabad recommended for India latency)
+3. Wait for tenancy provisioning (~10 minutes)
+
+## 2. Create the Ampere A1 VM
+
+1. Compute → Instances → Create
+2. Image: **Canonical Ubuntu 22.04** (ARM build)
+3. Shape: **VM.Standard.A1.Flex** with 4 OCPU + 24 GB RAM (Always Free)
+4. SSH: paste your public key
+5. Networking: leave defaults; the VCN's security list will need ingress rules 80/443/22 (Oracle auto-creates 22, add 80 + 443 yourself in the security list)
+6. Create
+
+## 3. Bootstrap the VM
+
+```bash
+ssh ubuntu@<vm-public-ip>
+sudo apt update
+curl -sL https://raw.githubusercontent.com/kaivalyaekaa/The-Healing-Presence/main/deploy/setup-oracle.sh | sudo bash
+```
+
+`setup-oracle.sh` installs JDK 21 (Temurin), MySQL 8, Caddy, creates the `healingpresence` DB + `thp_app` user, drops the systemd unit + Caddyfile, and opens firewall ports 22/80/443.
+
+## 4. Set environment variables
+
+```bash
+sudo nano /etc/healing-presence.env
+```
+
+```
+DB_URL=jdbc:mysql://localhost:3306/healingpresence?useSSL=false&serverTimezone=Asia/Kolkata
+DB_USER=thp_app
+DB_PASS=<from setup-oracle.sh stdout>
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=<strong-password>
+MAIL_USER=info@thehealingpresence.in
+MAIL_PASS=<gmail-app-password>
+APP_NOTIFY_TO=info@thehealingpresence.in
+APP_NOTIFY_FROM=noreply@thehealingpresence.in
+GOOGLE_CLIENT_ID=<from Google Cloud Console>
+GOOGLE_CLIENT_SECRET=<from Google Cloud Console>
+GOOGLE_REDIRECT_URI=https://thehealingpresence.in/admin/google-calendar/callback
+```
+
+## 5. Point DNS at the VM
+
+DNS provider for `thehealingpresence.in`:
+- A record: `@` → `<vm-public-ip>`
+- A record: `www` → `<vm-public-ip>`
+
+Wait for propagation (5-60 min). Caddy auto-issues Let's Encrypt certs on first request to the domain.
+
+## 6. Deploy
+
+From your laptop:
+```bash
+bash deploy/redeploy.sh
+```
+
+Builds the WAR locally, scp's it to `/opt/healingpresence/`, restarts the systemd unit. The site is live at `https://thehealingpresence.in`.
+
+## 7. Verify
+
+- `curl -I https://thehealingpresence.in/` → 200, valid Let's Encrypt cert
+- Sign in as `admin` → `/reception` day-grid renders → create a 2h booking → cascade-block 11 AM appears → email goes out → calendar event lands on Upma's Google Calendar (if Google connected)

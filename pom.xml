@@ -73,27 +73,14 @@
             <artifactId>spring-boot-starter-cache</artifactId>
         </dependency>
 
-        <!-- Spring Security + LDAP -->
+        <!-- Spring Security (in-memory admin user; LDAP removed) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-ldap</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-taglibs</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.ldap</groupId>
-            <artifactId>spring-ldap-core</artifactId>
-        </dependency>
-        <!-- Embedded LDAP (UnboundID) so the app runs without an external server -->
-        <dependency>
-            <groupId>com.unboundid</groupId>
-            <artifactId>unboundid-ldapsdk</artifactId>
         </dependency>
 
         <!-- MySQL driver (runtime) -->

@@ -24,22 +24,22 @@
             </div>
             <div class="row g-4 justify-content-center">
                 <div class="col-6 col-md-4 col-lg-2">
-                    <div class="vasudha-highlight"><span class="vh-icon">🛏</span><span>Fully Furnished Rooms</span></div>
+                    <div class="vasudha-highlight"><span class="vh-icon"><i class="bi bi-house-heart"></i></span><span>Fully Furnished Rooms</span></div>
                 </div>
                 <div class="col-6 col-md-4 col-lg-2">
-                    <div class="vasudha-highlight"><span class="vh-icon">❄</span><span>AC Rooms</span></div>
+                    <div class="vasudha-highlight"><span class="vh-icon"><i class="bi bi-snow"></i></span><span>AC Rooms</span></div>
                 </div>
                 <div class="col-6 col-md-4 col-lg-2">
-                    <div class="vasudha-highlight"><span class="vh-icon">🚿</span><span>Attached Toilets</span></div>
+                    <div class="vasudha-highlight"><span class="vh-icon"><i class="bi bi-droplet"></i></span><span>Attached Toilets</span></div>
                 </div>
                 <div class="col-6 col-md-4 col-lg-2">
-                    <div class="vasudha-highlight"><span class="vh-icon">🍳</span><span>Functional Kitchen</span></div>
+                    <div class="vasudha-highlight"><span class="vh-icon"><i class="bi bi-cup-hot"></i></span><span>Functional Kitchen</span></div>
                 </div>
                 <div class="col-6 col-md-4 col-lg-2">
-                    <div class="vasudha-highlight"><span class="vh-icon">📶</span><span>Free WiFi</span></div>
+                    <div class="vasudha-highlight"><span class="vh-icon"><i class="bi bi-wifi"></i></span><span>Free Wi-Fi</span></div>
                 </div>
                 <div class="col-6 col-md-4 col-lg-2">
-                    <div class="vasudha-highlight"><span class="vh-icon">♟</span><span>Games</span></div>
+                    <div class="vasudha-highlight"><span class="vh-icon"><i class="bi bi-puzzle"></i></span><span>Games &amp; Books</span></div>
                 </div>
             </div>
         </div>
@@ -164,12 +164,12 @@
                 <h2 class="section-title">Comforts of <span class="text-gradient-gold fst-italic">home, with care</span></h2>
             </div>
             <div class="row g-4">
-                <div class="col-6 col-md-4 col-lg-2"><div class="vasudha-offer"><span class="vh-icon">✨</span><span>Opulent Living</span></div></div>
-                <div class="col-6 col-md-4 col-lg-2"><div class="vasudha-offer"><span class="vh-icon">🍽</span><span>Equipped Kitchen</span></div></div>
-                <div class="col-6 col-md-4 col-lg-2"><div class="vasudha-offer"><span class="vh-icon">🛏</span><span>Twin Beds</span></div></div>
-                <div class="col-6 col-md-4 col-lg-2"><div class="vasudha-offer"><span class="vh-icon">📺</span><span>Television</span></div></div>
-                <div class="col-6 col-md-4 col-lg-2"><div class="vasudha-offer"><span class="vh-icon">📚</span><span>Books</span></div></div>
-                <div class="col-6 col-md-4 col-lg-2"><div class="vasudha-offer"><span class="vh-icon">♟</span><span>Board Games</span></div></div>
+                <div class="col-6 col-md-4 col-lg-2"><div class="vasudha-offer"><span class="vh-icon"><i class="bi bi-stars"></i></span><span>Opulent Living</span></div></div>
+                <div class="col-6 col-md-4 col-lg-2"><div class="vasudha-offer"><span class="vh-icon"><i class="bi bi-egg-fried"></i></span><span>Equipped Kitchen</span></div></div>
+                <div class="col-6 col-md-4 col-lg-2"><div class="vasudha-offer"><span class="vh-icon"><i class="bi bi-house-heart"></i></span><span>Twin Beds</span></div></div>
+                <div class="col-6 col-md-4 col-lg-2"><div class="vasudha-offer"><span class="vh-icon"><i class="bi bi-tv"></i></span><span>Television</span></div></div>
+                <div class="col-6 col-md-4 col-lg-2"><div class="vasudha-offer"><span class="vh-icon"><i class="bi bi-book"></i></span><span>Library</span></div></div>
+                <div class="col-6 col-md-4 col-lg-2"><div class="vasudha-offer"><span class="vh-icon"><i class="bi bi-puzzle"></i></span><span>Board Games</span></div></div>
             </div>
             <div class="row g-5 mt-3">
                 <div class="col-lg-7">

@@ -8,9 +8,9 @@
             <div class="row justify-content-center">
                 <div class="col-md-7 col-lg-5">
                     <div class="text-center mb-4">
-                        <span class="eyebrow d-inline-block">Staff sign in</span>
+                        <span class="eyebrow d-inline-block">Admin sign in</span>
                         <h1 class="mt-3">Welcome back</h1>
-                        <p class="text-muted">Sign in with your LDAP directory credentials.</p>
+                        <p class="text-muted">Sign in with your administrator credentials.</p>
                     </div>
 
                     <c:if test="${not empty loginError}">
@@ -38,9 +38,7 @@
                     <c:if test="${isDevProfile}">
                         <div class="alert alert-warning small mt-4">
                             <strong>Demo credentials (dev profile only):</strong>
-                            <br><code>admin</code> / <code>admin123</code> &mdash; ROLE_ADMIN, ROLE_STAFF, ROLE_RECEPTIONIST
-                            <br><code>therapist</code> / <code>therapist123</code> &mdash; ROLE_STAFF
-                            <br><code>reception</code> / <code>reception123</code> &mdash; ROLE_RECEPTIONIST
+                            <br><code>admin</code> / <code>admin123</code> &mdash; full access (single ADMIN role)
                         </div>
                     </c:if>
                 </div>

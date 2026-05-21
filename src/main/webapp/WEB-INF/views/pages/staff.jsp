@@ -6,9 +6,9 @@
 
     <section class="hero-section">
         <div class="container">
-            <span class="eyebrow d-inline-block">Staff area</span>
+            <span class="eyebrow d-inline-block">Admin area</span>
             <h1 class="mt-3">Hello, <span class="text-gradient-gold fst-italic">${displayName}</span></h1>
-            <p class="text-muted">You are signed in via LDAP.</p>
+            <p class="text-muted">You are signed in as administrator.</p>
         </div>
     </section>
 
@@ -29,7 +29,7 @@
                     <div class="service-card text-start">
                         <h3>Quick links</h3>
                         <ul class="list-unstyled mt-3">
-                            <sec:authorize access="hasAnyRole('ADMIN','RECEPTIONIST')">
+                            <sec:authorize access="hasRole('ADMIN')">
                                 <li class="mb-2"><a href="<c:url value='/reception'/>"><i class="bi bi-calendar-check me-2" style="color:var(--thp-gold-deep);"></i>Reception bookings panel</a></li>
                             </sec:authorize>
                             <sec:authorize access="hasRole('ADMIN')">

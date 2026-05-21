@@ -96,6 +96,7 @@ public class SlotSchedulerService {
 
         LocalDateTime now = LocalDateTime.now(clock);
         List<TimeSlot> slots = new ArrayList<>();
+        java.util.Set<Integer> validStarts = new java.util.HashSet<>(OfficeHours.validStartHours());
 
         for (int hour = OfficeHours.OPEN_HOUR; hour < OfficeHours.CLOSE_HOUR; hour++) {
             LocalDateTime slotStart = date.atTime(hour, 0);
@@ -107,17 +108,17 @@ public class SlotSchedulerService {
                 continue;
             }
 
-            // Past slot.
+            BookingRequest booking = bookingByStartHour.get(hour);
+
+            // Past slot — show whether or not the hour is a valid start (history).
             if (slotEnd.isBefore(now)) {
-                BookingRequest pastBooking = bookingByStartHour.get(hour);
                 slots.add(new TimeSlot(slotStart, slotEnd,
-                        pastBooking != null && pastBooking.getDurationHours() != null
-                                ? pastBooking.getDurationHours() : 0,
-                        SlotStatus.PAST, pastBooking));
+                        booking != null && booking.getDurationHours() != null
+                                ? booking.getDurationHours() : 0,
+                        SlotStatus.PAST, booking));
                 continue;
             }
 
-            BookingRequest booking = bookingByStartHour.get(hour);
             if (booking != null) {
                 slots.add(new TimeSlot(slotStart, slotEnd,
                         booking.getDurationHours() != null ? booking.getDurationHours() : 1,
@@ -127,6 +128,13 @@ public class SlotSchedulerService {
 
             if (cascadeBlockedHours.contains(hour)) {
                 slots.add(new TimeSlot(slotStart, slotEnd, 0, SlotStatus.BLOCKED_BY_CASCADE, null));
+                continue;
+            }
+
+            // Hours that are office-open but not a valid booking-start (e.g. 5 PM —
+            // reachable only as the cascade hour of a 4 PM 2-hour booking) are not
+            // rendered on the day-grid when free. They appear only when occupied.
+            if (!validStarts.contains(hour)) {
                 continue;
             }
 

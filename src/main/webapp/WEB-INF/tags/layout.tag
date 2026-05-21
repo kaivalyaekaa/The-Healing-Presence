@@ -17,10 +17,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-    <!-- Google Fonts -->
+    <!-- Google Fonts: single family across the whole site for a unified, formal voice. -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Nunito+Sans:ital,wght@0,300;0,400;0,600;0,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
 
     <!-- CSRF token for AJAX POSTs — main.js reads these meta tags -->
     <sec:csrfMetaTags/>
@@ -34,34 +34,7 @@
 </head>
 <body class="${bodyClass}">
 
-    <!-- Top utility bar -->
-    <div class="thp-topbar">
-        <div class="container d-flex flex-wrap justify-content-between align-items-center">
-            <div class="thp-topbar-left">
-                <i class="bi bi-telephone-fill me-1"></i>
-                <a href="tel:+918095008095">+91 8095-00-8095</a>
-                <sec:authorize access="isAuthenticated()">
-                    <span class="mx-2 d-none d-sm-inline">·</span>
-                    <span class="d-none d-sm-inline">Hi, <sec:authentication property="name"/></span>
-                    <form action="<c:url value='/logout'/>" method="post" class="d-inline ms-2">
-                        <sec:csrfInput/>
-                        <button type="submit" class="btn btn-link btn-sm p-0 text-decoration-none" style="color:inherit">Sign out</button>
-                    </form>
-                </sec:authorize>
-            </div>
-            <div class="thp-topbar-right d-flex align-items-center gap-2">
-                <sec:authorize access="hasAnyRole('ADMIN','RECEPTIONIST')">
-                    <a class="thp-topbar-link d-none d-sm-inline" href="<c:url value='/reception'/>"><i class="bi bi-calendar-check me-1"></i>Bookings</a>
-                </sec:authorize>
-                <sec:authorize access="!isAuthenticated()">
-                    <a class="thp-topbar-link d-none d-sm-inline" href="<c:url value='/login'/>">Staff sign in</a>
-                </sec:authorize>
-                <a class="thp-book-pill" href="<c:url value='/contact'/>">Book A Session <i class="bi bi-arrow-right"></i></a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Sticky navigation -->
+    <!-- Sticky navigation — utility links are absorbed into the right side of the nav for a single, cleaner band. -->
     <nav class="navbar navbar-expand-lg sticky-top thp-navbar">
         <div class="container">
             <a class="navbar-brand thp-brand" href="<c:url value='/'/>">
@@ -80,6 +53,18 @@
                     <li class="nav-item"><a class="nav-link" href="<c:url value='/accommodations'/>">Accommodations</a></li>
                     <li class="nav-item"><a class="nav-link" href="<c:url value='/contact'/>">Contact</a></li>
                     <li class="nav-item"><a class="nav-link" href="<c:url value='/about'/>">About</a></li>
+                    <sec:authorize access="hasRole('ADMIN')">
+                        <li class="nav-item"><a class="nav-link nav-link-admin" href="<c:url value='/reception'/>"><i class="bi bi-calendar-check me-1"></i>Bookings</a></li>
+                    </sec:authorize>
+                    <sec:authorize access="isAuthenticated()">
+                        <li class="nav-item d-flex align-items-center ms-lg-2">
+                            <form action="<c:url value='/logout'/>" method="post" class="d-inline m-0">
+                                <sec:csrfInput/>
+                                <button type="submit" class="btn-thp-ghost btn-sm">Sign out</button>
+                            </form>
+                        </li>
+                    </sec:authorize>
+                    <li class="nav-item ms-lg-2"><a class="btn-thp-primary btn-sm" href="<c:url value='/contact'/>">Book A Session <i class="bi bi-arrow-right ms-1"></i></a></li>
                 </ul>
             </div>
         </div>
@@ -95,8 +80,10 @@
         <div class="container">
             <div class="row gy-4">
                 <div class="col-md-4">
-                    <img src="<c:url value='/images/logo.png'/>" alt="The Healing Presence" class="thp-logo-footer mb-3" height="64" width="auto">
-                    <p class="small fst-italic">Solution lies within.</p>
+                    <a href="<c:url value='/'/>" class="d-inline-block mb-3">
+                        <img src="<c:url value='/images/logo.png'/>" alt="The Healing Presence" class="thp-logo-footer" height="84" width="auto">
+                    </a>
+                    <p class="thp-tagline-footer fst-italic">Solution lies within.</p>
                     <div class="thp-social mt-3">
                         <a href="https://www.instagram.com/the_healing_presence" target="_blank" rel="noopener" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
                         <a href="https://www.facebook.com/TheHealingPresence.Life" target="_blank" rel="noopener" aria-label="Facebook"><i class="bi bi-facebook"></i></a>

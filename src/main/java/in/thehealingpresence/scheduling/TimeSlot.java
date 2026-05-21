@@ -7,38 +7,18 @@ import java.time.LocalDateTime;
 /**
  * One hour-slot in the receptionist day-grid view.
  *
- * <p>Plain class (not a record) so JSP EL can resolve {@code slot.status} etc. via
- * standard JavaBean getters — record-accessor resolution in JSP EL is brittle.
+ * <p>Record. JSP EL resolves both the record accessors ({@code slot.start},
+ * {@code slot.status}) — JSP EL property resolution calls any zero-arg
+ * method whose name matches the property — and the explicit
+ * {@link #getLabel()} / {@link #isClickable()} helpers below.
  */
-public class TimeSlot {
-
-    private final LocalDateTime start;
-    private final LocalDateTime end;
-    private final int durationHours;
-    private final SlotStatus status;
-    private final BookingRequest booking;
-
-    public TimeSlot(LocalDateTime start, LocalDateTime end, int durationHours,
-                    SlotStatus status, BookingRequest booking) {
-        this.start = start;
-        this.end = end;
-        this.durationHours = durationHours;
-        this.status = status;
-        this.booking = booking;
-    }
-
-    public LocalDateTime getStart() { return start; }
-    public LocalDateTime getEnd() { return end; }
-    public int getDurationHours() { return durationHours; }
-    public SlotStatus getStatus() { return status; }
-    public BookingRequest getBooking() { return booking; }
-
-    /** Record-style accessors kept for Java-side callers and tests. */
-    public LocalDateTime start() { return start; }
-    public LocalDateTime end() { return end; }
-    public int durationHours() { return durationHours; }
-    public SlotStatus status() { return status; }
-    public BookingRequest booking() { return booking; }
+public record TimeSlot(
+        LocalDateTime start,
+        LocalDateTime end,
+        int durationHours,
+        SlotStatus status,
+        BookingRequest booking
+) {
 
     /** Human-readable display label like "10:00 AM". */
     public String getLabel() {
@@ -55,5 +35,4 @@ public class TimeSlot {
     public boolean isClickable() {
         return status == SlotStatus.AVAILABLE;
     }
-
 }

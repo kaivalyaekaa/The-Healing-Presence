@@ -19,14 +19,6 @@ spring:
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
-  ldap:
-    embedded:
-      base-dn: dc=healingpresence,dc=local
-      ldif: classpath:ldap/users.ldif
-      port: 8389
-      url: ldap://localhost:8389
-      validation:
-        enabled: false
 server:
   servlet:
     session:
@@ -46,9 +38,10 @@ app:
   contact:
     phone: "+91 8095-00-8095"
     address: "Yelahanka, Bangalore"
-  ldap:
-    user-dn-pattern: "uid={0},ou=people"
-    group-search-base: "ou=groups"
+  admin:
+    # Single in-memory admin user. Override via env vars in prod.
+    username: ${ADMIN_USERNAME:admin}
+    password: ${ADMIN_PASSWORD:admin123}
 
 logging:
   level:

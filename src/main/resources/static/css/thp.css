@@ -26,10 +26,13 @@
 html, body {
     background: var(--thp-bg);
     color: var(--thp-ink-soft);
-    font-family: "Nunito Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    /* SINGLE typographic voice across the whole site — Cormorant Garamond from
+       300 (lightest body) to 700 (display) for a unified, formal, elegant feel. */
+    font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif;
     font-weight: 400;
-    line-height: 1.7;
-    letter-spacing: -0.005em;
+    font-size: 1.0625rem;            /* 17px body — Cormorant reads small otherwise */
+    line-height: 1.65;
+    letter-spacing: 0;
 }
 
 /* Safety net: no <img> on the site is ever allowed to exceed its parent. */
@@ -58,11 +61,24 @@ img { max-width: 100%; height: auto; }
     .therapy-workshop-photo { aspect-ratio: 3 / 2; }
 }
 
-h1, h2, h3, h4, h5, .font-serif, .display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
+h1, h2, h3, h4, h5, h6, .font-serif, .display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
     font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif;
     color: var(--thp-ink);
     letter-spacing: -0.015em;
+    font-weight: 600;
 }
+
+/* Uppercase eyebrows, buttons and small captions need a tighter spacing to feel
+   intentional in a single-typeface site. */
+.eyebrow, .section-eyebrow,
+.btn, button, .btn-thp-primary, .btn-thp-outline, .btn-thp-gold, .btn-thp-ghost,
+.thp-navbar .nav-link, .navbar-nav .nav-link,
+.thp-form label, .form-label, label {
+    font-weight: 600;
+}
+
+/* Small body sizes need a hint more weight so Cormorant doesn't go too thin. */
+.small, small, .text-muted { font-weight: 500; }
 
 a { color: var(--thp-gold-deep); transition: color 0.2s ease; }
 a:hover { color: var(--thp-gold); }
@@ -904,10 +920,29 @@ a:hover { color: var(--thp-gold); }
     border-color: rgba(201, 166, 70, 0.4);
     box-shadow: 0 14px 28px -10px rgba(27, 27, 27, 0.12);
 }
+/* Elegant gold-stroked icon medallion for the Vasudha highlight + offer pills.
+   Replaces emoji glyphs with a circular gold-tinted disc holding a Bootstrap Icon. */
 .vasudha-highlight .vh-icon,
 .vasudha-offer .vh-icon {
-    font-size: 1.6rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.25rem;
+    height: 3.25rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--thp-gold-soft) 0%, #fff 100%);
+    border: 1px solid var(--thp-gold-light);
+    color: var(--thp-gold-deep);
+    font-size: 1.35rem;
     line-height: 1;
+    margin-bottom: 0.25rem;
+    box-shadow: 0 6px 14px -8px rgba(201, 166, 70, 0.4);
+}
+.vasudha-highlight:hover .vh-icon,
+.vasudha-offer:hover .vh-icon {
+    color: var(--thp-gold-darker);
+    border-color: var(--thp-gold);
+    box-shadow: 0 10px 22px -10px rgba(201, 166, 70, 0.55);
 }
 
 /* Map embed */
@@ -1098,3 +1133,87 @@ footer.thp-footer hr { border-color: rgba(255, 255, 255, 0.15) !important; }
     height: 100%;
     width: 100%;
 }
+
+/* =====================================================================
+   POST-YELLOW-BAR NAV ENHANCEMENTS
+   Yellow utility bar has been removed; "Book A Session", admin nav and
+   sign-out now live inside the white navigation band. These styles make
+   the inline button-pill and ghost-button feel native there.
+   ===================================================================== */
+
+/* Compact "Book A Session" pill in the nav — same brand pill, smaller. */
+.thp-navbar .btn-thp-primary.btn-sm {
+    padding: 0.45rem 1.15rem;
+    font-size: 0.85rem;
+    line-height: 1.2;
+    border-radius: 999px;
+    letter-spacing: 0.02em;
+}
+
+/* Ghost-style sign-out button: text only with subtle hover underline. */
+.btn-thp-ghost {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--thp-ink-soft);
+    padding: 0.45rem 0.9rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+.btn-thp-ghost:hover {
+    color: var(--thp-gold-deep);
+    border-color: var(--thp-line);
+    background: var(--thp-bg-alt);
+}
+
+/* "Bookings" admin link picks up a subtle gold underline so the staff CTA
+   reads as distinct from the public-marketing nav. */
+.thp-navbar .nav-link-admin {
+    color: var(--thp-gold-deep) !important;
+    font-weight: 600;
+}
+.thp-navbar .nav-link-admin:hover {
+    color: var(--thp-gold-darker) !important;
+}
+
+/* =====================================================================
+   FOOTER LOGO + TAGLINE — bigger, more prominent (per client request).
+   ===================================================================== */
+.thp-logo-footer {
+    max-height: 84px;
+    width: auto;
+    filter: brightness(1.1);   /* gold pops on the dark footer */
+}
+.thp-tagline-footer {
+    font-size: 1.05rem;
+    color: var(--thp-gold-light);
+    font-style: italic;
+    margin-bottom: 0.5rem;
+}
+
+/* =====================================================================
+   MOBILE & TABLET RESPONSIVE — phone <576, tablet 576-991, desktop ≥992.
+   The single-font + premium look needs to hold across the breakpoints.
+   ===================================================================== */
+@media (max-width: 991px) {
+    .thp-navbar .navbar-nav { padding-top: 0.75rem; gap: 0.25rem; }
+    .thp-navbar .btn-thp-primary.btn-sm,
+    .thp-navbar .btn-thp-ghost { width: 100%; text-align: center; }
+    .vasudha-highlight .vh-icon,
+    .vasudha-offer .vh-icon { width: 2.75rem; height: 2.75rem; font-size: 1.15rem; }
+}
+@media (max-width: 576px) {
+    html, body { font-size: 1.0rem; }
+    .hero-headline { font-size: clamp(1.85rem, 8vw, 2.6rem); }
+    .section-title { font-size: clamp(1.6rem, 6vw, 2.2rem); }
+    .thp-section { padding: 2.5rem 0; }
+    .thp-section.generous { padding: 3.25rem 0; }
+}
+
+/* =====================================================================
+   OBSOLETE-BUT-HARMLESS — .thp-topbar styles remain in the file but the
+   markup that referenced them is gone (utility bar removed from layout.tag).
+   Left in place to avoid sweeping CSS-renamer changes.
+   ===================================================================== */

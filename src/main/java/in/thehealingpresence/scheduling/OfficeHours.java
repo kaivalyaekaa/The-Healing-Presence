@@ -5,13 +5,16 @@ import java.util.List;
 /**
  * The office schedule constants for the receptionist scheduler.
  * <p>
- * Default: 10 AM – 7 PM with a hard lunch block 1–2 PM, giving 8 bookable hourly starts.
- * Adjust here to change office hours globally; SlotSchedulerService picks up the values.
+ * Office hours: 10 AM – 6 PM with a hard lunch block 1–2 PM. Six valid
+ * booking-start hours (three per half) with the 4 PM start able to extend to
+ * 6 PM as a 2-hour booking — giving the "5–6 PM block" only reachable as
+ * the cascade hour of a 4 PM 2-hour booking, never as a direct booking start.
  *
  * <pre>
- * Hour:  10 11 12 13 14 15 16 17 18 19
- *        |  |  |  L  |  |  |  |  |  end
- *        bookable slots: [10, 11, 12, 14, 15, 16, 17, 18]
+ * Hour:  10 11 12 13 14 15 16 17 18
+ *        |  |  |  L  |  |  |  c  end
+ *        valid START hours: [10, 11, 12, 14, 15, 16]   (six)
+ *        hour 17 (5 PM)   : reachable only as cascade-hour of a 16:00 2h booking
  * </pre>
  */
 public final class OfficeHours {
@@ -21,8 +24,12 @@ public final class OfficeHours {
     /** First hour-of-day that may be booked (10:00 AM). */
     public static final int OPEN_HOUR = 10;
 
-    /** Hour-of-day the office closes (19 = 7:00 PM). 1-hour booking at 18 ends at 19. */
-    public static final int CLOSE_HOUR = 19;
+    /**
+     * Hour-of-day the office closes (18 = 6:00 PM).
+     * A 2-hour booking at 16:00 ends at 18:00 (the close hour itself, allowed by the
+     * scheduler's "end &lt;= CLOSE_HOUR" check).
+     */
+    public static final int CLOSE_HOUR = 18;
 
     /** Lunch break starts (13 = 1:00 PM). */
     public static final int LUNCH_START = 13;
@@ -32,10 +39,10 @@ public final class OfficeHours {
 
     /**
      * The hours that may be the START of a booking.
-     * Lunch hour is excluded; the close hour is excluded (no booking at 19:00 because
-     * even a 1-hour slot would end at 20:00, after close).
+     * Lunch is excluded; the close hour is excluded; 17 (5 PM) is excluded — the
+     * 5–6 PM slot exists only as the cascade hour of a 16:00 two-hour booking.
      */
     public static List<Integer> validStartHours() {
-        return List.of(10, 11, 12, 14, 15, 16, 17, 18);
+        return List.of(10, 11, 12, 14, 15, 16);
     }
 }

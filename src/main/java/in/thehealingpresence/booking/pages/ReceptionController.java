@@ -32,7 +32,7 @@ import java.util.Map;
 
 /**
  * Receptionist admin panel routes. All gated by {@code /reception/**} →
- * {@code hasAnyRole('ADMIN','RECEPTIONIST')} in {@link in.thehealingpresence.config.SecurityConfig}.
+ * {@code hasRole('ADMIN')} in {@link in.thehealingpresence.config.SecurityConfig}.
  */
 @Controller
 @RequestMapping("/reception")

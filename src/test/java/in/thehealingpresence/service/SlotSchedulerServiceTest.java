@@ -44,12 +44,14 @@ class SlotSchedulerServiceTest {
     }
 
     @Test
-    void emptyDayHas7AvailableSlotsAndOneLunch() {
+    void emptyDayHas6AvailableSlotsAndOneLunch() {
         List<TimeSlot> slots = scheduler.getDaySlots(FUTURE);
-        // 9 hour-slots from 10 to 18 inclusive (10, 11, 12, 13, 14, 15, 16, 17, 18)
-        assertThat(slots).hasSize(9);
+        // 7 hour-slots rendered: 10, 11, 12, LUNCH at 13, 14, 15, 16.
+        // 17 (5 PM) is office-open but not a valid booking start; it's only
+        // rendered when cascade-blocked by a 16:00 two-hour booking.
+        assertThat(slots).hasSize(7);
         assertThat(slots.stream().filter(s -> s.status() == SlotStatus.LUNCH).count()).isEqualTo(1);
-        assertThat(slots.stream().filter(s -> s.status() == SlotStatus.AVAILABLE).count()).isEqualTo(8);
+        assertThat(slots.stream().filter(s -> s.status() == SlotStatus.AVAILABLE).count()).isEqualTo(6);
     }
 
     @Test
@@ -90,10 +92,30 @@ class SlotSchedulerServiceTest {
     }
 
     @Test
-    void twoHourBookingAt6PmIsRejectedDueToCloseHour() {
-        assertThatThrownBy(() -> scheduler.createReceptionistBooking(dto(FUTURE, 18, 2)))
+    void bookingAt5PmIsRejectedBecauseNotAValidStart() {
+        // 17:00 (5 PM) exists in office hours but is reachable only as the
+        // cascade hour of a 16:00 two-hour booking. Direct booking is rejected.
+        assertThatThrownBy(() -> scheduler.createReceptionistBooking(dto(FUTURE, 17, 1)))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("close");
+                .hasMessageContaining("outside office hours");
+    }
+
+    @Test
+    void bookingAt6PmIsRejectedBecauseOfficeIsClosed() {
+        // 18:00 (6 PM) is the close hour itself — never a valid booking start.
+        assertThatThrownBy(() -> scheduler.createReceptionistBooking(dto(FUTURE, 18, 1)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("outside office hours");
+    }
+
+    @Test
+    void twoHourBookingAt4PmEndsExactlyAtClose() {
+        // 16:00 + 2h = 18:00 (close). The 5 PM cascade hour shows up in the grid.
+        scheduler.createReceptionistBooking(dto(FUTURE, 16, 2));
+        List<TimeSlot> slots = scheduler.getDaySlots(FUTURE);
+        assertThat(slotAtHour(slots, 16).status()).isEqualTo(SlotStatus.BOOKED);
+        assertThat(slotAtHour(slots, 16).durationHours()).isEqualTo(2);
+        assertThat(slotAtHour(slots, 17).status()).isEqualTo(SlotStatus.BLOCKED_BY_CASCADE);
     }
 
     @Test
@@ -127,13 +149,15 @@ class SlotSchedulerServiceTest {
     @Test
     void canBookGuardMatchesCreateBehavior() {
         LocalDateTime ok = FUTURE.atTime(10, 0);
-        LocalDateTime lunchCross = FUTURE.atTime(12, 0); // with 2h
-        LocalDateTime pastClose = FUTURE.atTime(18, 0);  // with 2h
+        LocalDateTime lunchCross = FUTURE.atTime(12, 0); // with 2h would cross lunch
+        LocalDateTime fivePm = FUTURE.atTime(17, 0);     // not a valid start (cascade-only)
+        LocalDateTime sixPm = FUTURE.atTime(18, 0);      // close hour itself
         assertThat(scheduler.canBook(ok, 2)).isTrue();
         assertThat(scheduler.canBook(lunchCross, 2)).isFalse();
-        assertThat(scheduler.canBook(pastClose, 2)).isFalse();
-        assertThat(scheduler.canBook(lunchCross, 1)).isTrue(); // 12 PM 1h is fine
-        assertThat(scheduler.canBook(pastClose, 1)).isTrue();  // 6 PM 1h is fine
+        assertThat(scheduler.canBook(lunchCross, 1)).isTrue();  // 12 PM 1h is fine
+        assertThat(scheduler.canBook(fivePm, 1)).isFalse();      // 5 PM is not a valid start
+        assertThat(scheduler.canBook(sixPm, 1)).isFalse();       // 6 PM is the close hour
+        assertThat(scheduler.canBook(FUTURE.atTime(16, 0), 2)).isTrue();  // 4-6 PM is the last allowed 2-hour window
     }
 
     // ------------------------------------------------------------ helpers --
