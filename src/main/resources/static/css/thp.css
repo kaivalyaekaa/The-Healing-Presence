@@ -1,32 +1,68 @@
 :root {
-    --thp-ink: #1b1b1b;
-    --thp-ink-soft: #4a4a4a;
-    --thp-line: #e8e2d6;
-    --thp-gold: #c9a646;
-    --thp-gold-deep: #a37f25;
-    --thp-gold-light: #e3c878;
-    --thp-gold-soft: #f5ebcf;
+    /* H1 — premium "Aman-adjacent" palette: cooler, more refined gold */
+    --thp-ink: #0f0f0f;
+    --thp-ink-soft: #44423d;
+    --thp-line: #e5dfd3;
+    --thp-gold: #a39070;          /* muted gold, less yellow */
+    --thp-gold-deep: #6b5d47;     /* deep mocha for hover + accents */
+    --thp-gold-light: #d4c5a9;
+    --thp-gold-soft: #f4f0e8;     /* warm cream, not yellow-cream */
     --thp-bg: #ffffff;
-    --thp-bg-alt: #faf6ec;
+    --thp-bg-alt: #f8f5ee;
+    --thp-sage: #9ab9a5;          /* secondary accent for wellness hovers */
+
+    /* Shadow scale — gives every card / button consistent depth language */
+    --thp-shadow-sm: 0 8px 16px -8px rgba(15, 15, 15, 0.08);
+    --thp-shadow-md: 0 18px 36px -12px rgba(15, 15, 15, 0.14);
+    --thp-shadow-lg: 0 30px 60px -20px rgba(15, 15, 15, 0.22);
+    --thp-shadow-gold: 0 16px 32px -10px rgba(107, 93, 71, 0.28);
+
+    /* Spring easing for hover lifts */
+    --thp-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 html, body {
     background: var(--thp-bg);
     color: var(--thp-ink-soft);
     font-family: "Nunito Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    line-height: 1.6;
+    font-weight: 400;
+    line-height: 1.7;
+    letter-spacing: -0.005em;
 }
 
 /* Safety net: no <img> on the site is ever allowed to exceed its parent. */
 img { max-width: 100%; height: auto; }
 
+/* Premium scroll-reveal: cards fade up as they enter the viewport.
+   main.js applies .thp-reveal on bind, .in-view on intersect.
+   prefers-reduced-motion users skip the binding entirely (see main.js). */
+.thp-reveal {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.7s ease, transform 0.7s var(--thp-ease);
+}
+.thp-reveal.in-view {
+    opacity: 1;
+    transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+    .thp-reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+}
+
+/* Mobile-friendly aspect ratios on the big photo cards.
+   16:9 is too letterboxed at 375px width; 3:2 reads better. */
+@media (max-width: 768px) {
+    .big-service-photo,
+    .therapy-workshop-photo { aspect-ratio: 3 / 2; }
+}
+
 h1, h2, h3, h4, h5, .font-serif, .display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
     font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif;
     color: var(--thp-ink);
-    letter-spacing: -0.01em;
+    letter-spacing: -0.015em;
 }
 
-a { color: var(--thp-gold-deep); }
+a { color: var(--thp-gold-deep); transition: color 0.2s ease; }
 a:hover { color: var(--thp-gold); }
 
 .eyebrow {
@@ -62,18 +98,25 @@ a:hover { color: var(--thp-gold); }
     color: #fff;
     border: 1px solid var(--thp-ink);
     border-radius: 999px;
-    padding: 0.65rem 1.5rem;
+    padding: 0.75rem 1.75rem;
     font-weight: 600;
+    letter-spacing: 0.02em;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    transition: background 0.2s ease, color 0.2s ease;
+    transition: background 0.3s var(--thp-ease),
+                color 0.3s var(--thp-ease),
+                transform 0.3s var(--thp-ease),
+                box-shadow 0.3s var(--thp-ease),
+                border-color 0.3s var(--thp-ease);
 }
 .btn-thp-primary:hover {
     background: var(--thp-gold-deep);
     color: #fff;
     border-color: var(--thp-gold-deep);
+    transform: translateY(-2px);
+    box-shadow: var(--thp-shadow-gold);
 }
 
 .btn-thp-outline {
@@ -81,17 +124,23 @@ a:hover { color: var(--thp-gold); }
     color: var(--thp-ink);
     border: 1px solid var(--thp-ink);
     border-radius: 999px;
-    padding: 0.65rem 1.5rem;
+    padding: 0.75rem 1.75rem;
     font-weight: 600;
+    letter-spacing: 0.02em;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    transition: background 0.2s ease, color 0.2s ease;
+    transition: background 0.3s var(--thp-ease),
+                color 0.3s var(--thp-ease),
+                transform 0.3s var(--thp-ease),
+                box-shadow 0.3s var(--thp-ease);
 }
 .btn-thp-outline:hover {
     background: var(--thp-ink);
     color: #fff;
+    transform: translateY(-2px);
+    box-shadow: var(--thp-shadow-md);
 }
 
 .btn-thp-gold {
@@ -99,11 +148,26 @@ a:hover { color: var(--thp-gold); }
     color: #fff;
     border: 1px solid var(--thp-gold);
     border-radius: 999px;
-    padding: 0.65rem 1.5rem;
+    padding: 0.75rem 1.75rem;
     font-weight: 600;
+    letter-spacing: 0.02em;
     text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background 0.3s var(--thp-ease),
+                color 0.3s var(--thp-ease),
+                transform 0.3s var(--thp-ease),
+                box-shadow 0.3s var(--thp-ease),
+                border-color 0.3s var(--thp-ease);
 }
-.btn-thp-gold:hover { background: var(--thp-gold-deep); color: #fff; }
+.btn-thp-gold:hover {
+    background: var(--thp-gold-deep);
+    border-color: var(--thp-gold-deep);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: var(--thp-shadow-gold);
+}
 
 .thp-topbar {
     background: var(--thp-gold);
@@ -205,27 +269,38 @@ a:hover { color: var(--thp-gold); }
 .thp-section { padding: 4.5rem 0; }
 .thp-section.alt { background: linear-gradient(180deg, #fff 0%, var(--thp-bg-alt) 100%); }
 .thp-section.alt-rev { background: linear-gradient(0deg, #fff 0%, var(--thp-bg-alt) 100%); }
+.thp-section.tight    { padding: 3rem 0; }
+.thp-section.generous { padding: 6rem 0; }
+@media (max-width: 768px) {
+    .thp-section          { padding: 3rem 0; }
+    .thp-section.tight    { padding: 2rem 0; }
+    .thp-section.generous { padding: 4rem 0; }
+}
 
 .section-title {
     font-size: clamp(1.75rem, 3vw, 2.75rem);
-    font-weight: 600;
+    font-weight: 700;
     line-height: 1.2;
+    letter-spacing: -0.02em;
     margin-bottom: 0.5rem;
 }
+.hero-headline { letter-spacing: -0.025em; font-weight: 600; }
+.hero-lede, .lead-narrow, p.lead { font-weight: 300; line-height: 1.75; }
+.eyebrow, .section-eyebrow { letter-spacing: 0.22em; }
 
 .service-card {
     background: #fff;
     border-radius: 1.25rem;
-    border: 1px solid var(--thp-line);
+    border: none;
     padding: 2.25rem 1.5rem;
     text-align: center;
     height: 100%;
-    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    box-shadow: var(--thp-shadow-sm);
+    transition: transform 0.35s var(--thp-ease), box-shadow 0.35s var(--thp-ease);
 }
 .service-card:hover {
     transform: translateY(-6px);
-    border-color: rgba(201, 166, 70, 0.4);
-    box-shadow: 0 24px 48px -16px rgba(27, 27, 27, 0.16);
+    box-shadow: var(--thp-shadow-md);
 }
 .service-card .icon-bubble {
     width: 64px;
@@ -260,14 +335,16 @@ a:hover { color: var(--thp-gold); }
 .therapist-card {
     background: #fff;
     border: 1px solid var(--thp-line);
-    border-radius: 1.25rem;
+    border-top: 4px solid var(--thp-gold-deep);
+    border-radius: 0 0 1.25rem 1.25rem;
     overflow: hidden;
     height: 100%;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: var(--thp-shadow-sm);
+    transition: transform 0.35s var(--thp-ease), box-shadow 0.35s var(--thp-ease);
 }
 .therapist-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 24px 40px -16px rgba(27, 27, 27, 0.15);
+    box-shadow: var(--thp-shadow-md);
 }
 .therapist-card .photo {
     position: relative;
@@ -303,12 +380,58 @@ a:hover { color: var(--thp-gold); }
     letter-spacing: 0.1em;
 }
 
+/* Tier 2: credential chip under therapist name */
+.credential-tag {
+    display: inline-block;
+    padding: 0.25rem 0.85rem;
+    border-radius: 999px;
+    background: var(--thp-gold-soft);
+    color: var(--thp-gold-deep);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-top: 0.5rem;
+}
+
+/* Tier 2: testimonial author row with avatar */
+.testimonial-author {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+.testimonial-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--thp-gold-soft);
+    color: var(--thp-gold-deep);
+    font-weight: 700;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+.testimonial-avatar-initials {
+    /* uses same class — display:inline-flex above handles centering for initials */
+}
+
 .testimonial-card {
-    background: #fff;
-    border: 1px solid var(--thp-line);
-    border-radius: 1.25rem;
+    background: var(--thp-bg-alt);
+    border: none;
+    border-left: 4px solid var(--thp-gold);
+    border-radius: 0 1rem 1rem 0;
     padding: 2rem;
     height: 100%;
+    box-shadow: var(--thp-shadow-sm);
+    transition: transform 0.35s var(--thp-ease), box-shadow 0.35s var(--thp-ease);
+}
+.testimonial-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--thp-shadow-md);
 }
 .testimonial-card .stars { color: var(--thp-gold); margin-bottom: 0.75rem; }
 .testimonial-card blockquote {
@@ -439,21 +562,35 @@ a:hover { color: var(--thp-gold); }
     border-radius: 1.25rem;
     overflow: hidden;
     height: 100%;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: var(--thp-shadow-sm);
+    transition: transform 0.4s var(--thp-ease), box-shadow 0.4s var(--thp-ease);
 }
 .big-service-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 24px 48px -16px rgba(27, 27, 27, 0.16);
+    transform: translateY(-6px);
+    box-shadow: var(--thp-shadow-lg);
 }
 .big-service-photo {
+    position: relative;
     aspect-ratio: 16 / 9;
     background: var(--thp-gold-soft);
     overflow: hidden;
 }
+.big-service-photo::after {
+    content: "";
+    position: absolute; inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 50%, rgba(15, 15, 15, 0.18) 100%);
+    transition: opacity 0.4s ease;
+    opacity: 0.6;
+}
+.big-service-card:hover .big-service-photo::after { opacity: 0; }
 .big-service-photo img {
     width: 100%; height: 100%;
     object-fit: cover; display: block;
-    transition: transform 0.6s ease;
+    transition: transform 0.6s ease, filter 0.4s ease;
+}
+.big-service-card:hover .big-service-photo img {
+    filter: saturate(1.08) brightness(1.04);
 }
 .big-service-card:hover .big-service-photo img { transform: scale(1.04); }
 .big-service-body { padding: 1.75rem; }
@@ -611,6 +748,83 @@ a:hover { color: var(--thp-gold); }
     display: block;
 }
 
+/* ===== Receptionist day-grid panel ===== */
+.reception-dashboard .slot-grid { margin-top: 1rem; }
+.slot-card {
+    display: block;
+    padding: 1.25rem 1rem;
+    border-radius: 0.9rem;
+    border: 1px solid var(--thp-line);
+    background: #fff;
+    text-decoration: none;
+    color: var(--thp-ink);
+    text-align: center;
+    min-height: 100px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.slot-card .slot-time {
+    font-family: "Cormorant Garamond", serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+.slot-card .slot-state {
+    font-size: 1rem;
+    font-weight: 600;
+}
+.slot-card .slot-meta {
+    color: var(--thp-ink-soft);
+    margin-top: 0.25rem;
+    font-size: 0.9rem;
+}
+.slot-card.available {
+    background: #f0f5f2;
+    border-color: #d1e4dd;
+    color: #4a6b5d;
+}
+.slot-card.available:hover {
+    transform: translateY(-3px);
+    background: #e7efe9;
+    border-color: var(--thp-sage);
+    color: #2d4a3d;
+    box-shadow: var(--thp-shadow-md);
+}
+.slot-card.booked {
+    background: #faf5f5;
+    border-color: #e8d9d9;
+    color: #6b4747;
+}
+.slot-card.booked:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--thp-shadow-md);
+}
+.slot-card.blocked {
+    background: #f7f7f7;
+    border-color: #dedede;
+    color: #888;
+    cursor: not-allowed;
+}
+.slot-card.lunch {
+    background: var(--thp-gold-soft);
+    border-color: var(--thp-gold-light);
+    color: var(--thp-gold-deep);
+    cursor: not-allowed;
+}
+.slot-card.past {
+    background: #fafafa;
+    border-color: #ececec;
+    color: #b2b2b2;
+    cursor: default;
+}
+.legend-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 0.35rem;
+    vertical-align: middle;
+}
+
 /* ===== Vasudha (accommodations) =====
    Photo containers use the padding-bottom trick + absolute-positioned img
    so they NEVER overflow regardless of source image dimensions. */
@@ -755,16 +969,28 @@ a:hover { color: var(--thp-gold); }
 
 .thp-form .form-control,
 .thp-form .form-select {
+    background: #fafbfa;
     border-radius: 0.75rem;
     border: 1px solid var(--thp-line);
-    padding: 0.65rem 1rem;
+    padding: 0.75rem 1rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 .thp-form .form-control:focus,
 .thp-form .form-select:focus {
+    background: #fff;
     border-color: var(--thp-gold);
-    box-shadow: 0 0 0 0.2rem rgba(201, 166, 70, 0.2);
+    border-left: 3px solid var(--thp-gold-deep);
+    box-shadow: 0 0 0 0.2rem rgba(163, 144, 112, 0.18);
+    outline: none;
 }
-.thp-form label { font-weight: 600; color: var(--thp-ink); margin-bottom: 0.35rem; }
+.thp-form label {
+    font-weight: 600;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--thp-gold-deep);
+    margin-bottom: 0.5rem;
+}
 .thp-form .form-error {
     color: #b34141;
     font-size: 0.85rem;

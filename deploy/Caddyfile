@@ -1,0 +1,21 @@
+REPLACE_DOMAIN_OR_IP {
+    encode gzip
+    reverse_proxy localhost:8080 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    # Long cache for static assets, normal cache for everything else
+    @static path /css/* /js/* /images/* /videos/* /icons/* /favicon.ico
+    header @static Cache-Control "public, max-age=31536000, immutable"
+
+    log {
+        output file /var/log/caddy/healing-presence.log {
+            roll_size 10mb
+            roll_keep 10
+        }
+        format console
+    }
+}

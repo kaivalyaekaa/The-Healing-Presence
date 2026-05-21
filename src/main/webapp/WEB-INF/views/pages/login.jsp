@@ -38,8 +38,9 @@
                     <c:if test="${isDevProfile}">
                         <div class="alert alert-warning small mt-4">
                             <strong>Demo credentials (dev profile only):</strong>
-                            <br><code>admin</code> / <code>admin123</code> &mdash; ROLE_ADMIN, ROLE_STAFF
+                            <br><code>admin</code> / <code>admin123</code> &mdash; ROLE_ADMIN, ROLE_STAFF, ROLE_RECEPTIONIST
                             <br><code>therapist</code> / <code>therapist123</code> &mdash; ROLE_STAFF
+                            <br><code>reception</code> / <code>reception123</code> &mdash; ROLE_RECEPTIONIST
                         </div>
                     </c:if>
                 </div>

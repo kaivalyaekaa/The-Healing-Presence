@@ -30,6 +30,10 @@ public class Testimonial {
 
     private boolean published;
 
+    /** Optional reviewer avatar path; null falls back to a coloured initial circle in the JSP. */
+    @Column(length = 255)
+    private String avatarPath;
+
     public Testimonial() {
     }
 
@@ -50,4 +54,7 @@ public class Testimonial {
 
     public boolean isPublished() { return published; }
     public void setPublished(boolean published) { this.published = published; }
+
+    public String getAvatarPath() { return avatarPath; }
+    public void setAvatarPath(String avatarPath) { this.avatarPath = avatarPath; }
 }

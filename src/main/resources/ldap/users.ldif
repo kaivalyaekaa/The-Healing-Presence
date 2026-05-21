@@ -39,6 +39,17 @@ uid: therapist
 mail: therapist@healingpresence.local
 userPassword: therapist123
 
+dn: uid=reception,ou=people,dc=healingpresence,dc=local
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+cn: Front Desk Receptionist
+sn: Receptionist
+uid: reception
+mail: reception@healingpresence.local
+userPassword: reception123
+
 dn: cn=ADMIN,ou=groups,dc=healingpresence,dc=local
 objectClass: top
 objectClass: groupOfUniqueNames
@@ -51,3 +62,10 @@ objectClass: groupOfUniqueNames
 cn: STAFF
 uniqueMember: uid=admin,ou=people,dc=healingpresence,dc=local
 uniqueMember: uid=therapist,ou=people,dc=healingpresence,dc=local
+
+dn: cn=RECEPTIONIST,ou=groups,dc=healingpresence,dc=local
+objectClass: top
+objectClass: groupOfUniqueNames
+cn: RECEPTIONIST
+uniqueMember: uid=admin,ou=people,dc=healingpresence,dc=local
+uniqueMember: uid=reception,ou=people,dc=healingpresence,dc=local

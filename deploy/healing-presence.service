@@ -1,0 +1,32 @@
+[Unit]
+Description=The Healing Presence Spring Boot WAR
+After=network-online.target mysql.service
+Wants=network-online.target mysql.service
+
+[Service]
+Type=simple
+User=thp
+Group=thp
+WorkingDirectory=/opt/healingpresence
+EnvironmentFile=/etc/healing-presence.env
+ExecStart=/usr/bin/java \
+    -Xmx512m \
+    -XX:+UseG1GC \
+    -XX:MaxGCPauseMillis=200 \
+    -Duser.timezone=Asia/Kolkata \
+    -jar /opt/healingpresence/healing-presence.war
+SuccessExitStatus=143
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/opt/healingpresence
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

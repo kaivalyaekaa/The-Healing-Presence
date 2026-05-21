@@ -8,11 +8,15 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.ldap.core.support.BaseLdapPathContextSource;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.ldap.authentication.BindAuthenticator;
 import org.springframework.security.ldap.authentication.LdapAuthenticationProvider;
 import org.springframework.security.ldap.search.FilterBasedLdapUserSearch;
 import org.springframework.security.ldap.userdetails.DefaultLdapAuthoritiesPopulator;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+
+import java.util.Set;
 
 @Configuration
 @Profile("!test")
@@ -32,6 +36,22 @@ public class SecurityConfig {
         source.setAnonymousReadOnly(true);
         source.afterPropertiesSet();
         return source;
+    }
+
+    /**
+     * Route post-login redirect based on role:
+     *   - RECEPTIONIST (without ADMIN/STAFF) → /reception (the booking panel)
+     *   - everyone else (ADMIN, STAFF) → /staff
+     */
+    @Bean
+    public AuthenticationSuccessHandler roleBasedSuccessHandler() {
+        return (request, response, authentication) -> {
+            Set<String> roles = AuthorityUtils.authorityListToSet(authentication.getAuthorities());
+            boolean isReceptionOnly = roles.contains("ROLE_RECEPTIONIST")
+                    && !roles.contains("ROLE_ADMIN")
+                    && !roles.contains("ROLE_STAFF");
+            response.sendRedirect(request.getContextPath() + (isReceptionOnly ? "/reception" : "/staff"));
+        };
     }
 
     @Bean
@@ -69,12 +89,13 @@ public class SecurityConfig {
                 ).permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/staff/**").hasAnyRole("ADMIN", "STAFF")
+                .requestMatchers("/reception/**").hasAnyRole("ADMIN", "RECEPTIONIST")
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
                 .loginPage("/login")
                 .loginProcessingUrl("/login")
-                .defaultSuccessUrl("/staff", true)
+                .successHandler(roleBasedSuccessHandler())
                 .failureUrl("/login?error")
                 .permitAll()
             )

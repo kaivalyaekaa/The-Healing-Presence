@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <%@ taglib prefix="t" tagdir="/WEB-INF/tags" %>
 <t:layout title="Home">
 
@@ -210,7 +211,19 @@
                                     <c:forEach begin="1" end="${ts.rating}"><i class="bi bi-star-fill"></i></c:forEach>
                                 </div>
                                 <blockquote>&ldquo;${ts.body}&rdquo;</blockquote>
-                                <cite>&mdash; ${ts.clientName}</cite>
+                                <div class="testimonial-author">
+                                    <c:choose>
+                                        <c:when test="${not empty ts.avatarPath}">
+                                            <img src="<c:url value='${ts.avatarPath}'/>" alt="${ts.clientName}" class="testimonial-avatar">
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="testimonial-avatar testimonial-avatar-initials">
+                                                ${fn:toUpperCase(fn:substring(ts.clientName,0,1))}
+                                            </span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                    <cite>&mdash; ${ts.clientName}</cite>
+                                </div>
                             </div>
                         </div>
                     </c:forEach>

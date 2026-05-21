@@ -22,6 +22,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Nunito+Sans:ital,wght@0,300;0,400;0,600;0,700&display=swap" rel="stylesheet">
 
+    <!-- CSRF token for AJAX POSTs — main.js reads these meta tags -->
+    <sec:csrfMetaTags/>
+
     <!-- Site CSS (cache-busted in dev so edits show on every reload) -->
     <link rel="stylesheet" href="<c:url value='/css/thp.css'/>?v=<%= System.currentTimeMillis() %>">
 
@@ -47,6 +50,9 @@
                 </sec:authorize>
             </div>
             <div class="thp-topbar-right d-flex align-items-center gap-2">
+                <sec:authorize access="hasAnyRole('ADMIN','RECEPTIONIST')">
+                    <a class="thp-topbar-link d-none d-sm-inline" href="<c:url value='/reception'/>"><i class="bi bi-calendar-check me-1"></i>Bookings</a>
+                </sec:authorize>
                 <sec:authorize access="!isAuthenticated()">
                     <a class="thp-topbar-link d-none d-sm-inline" href="<c:url value='/login'/>">Staff sign in</a>
                 </sec:authorize>

@@ -1,17 +1,26 @@
 spring:
   datasource:
-    url: ${DB_URL:jdbc:mysql://localhost:3306/healingpresence?useSSL=true&serverTimezone=Asia/Kolkata}
+    url: ${DB_URL:jdbc:mysql://localhost:3306/healingpresence?useSSL=false&serverTimezone=Asia/Kolkata&allowPublicKeyRetrieval=true}
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: ${DB_USER:healingpresence}
+    username: ${DB_USER:thp_app}
     password: ${DB_PASS:}
   jpa:
+    # Flyway owns schema changes; Hibernate just validates the entity model
+    # matches the migrated tables.
     hibernate:
-      ddl-auto: validate
+      ddl-auto: ${JPA_DDL_AUTO:validate}
     show-sql: false
-    database-platform: org.hibernate.dialect.MySQLDialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        jdbc.time_zone: Asia/Kolkata
   sql:
     init:
       mode: never
+
+google:
+  calendar:
+    redirect-uri: ${GOOGLE_REDIRECT_URI:https://thehealingpresence.in/admin/google-calendar/callback}
 
 server:
   servlet:
@@ -19,6 +28,8 @@ server:
       cookie:
         secure: true
         http-only: true
+        same-site: lax
+  forward-headers-strategy: native      # honour X-Forwarded-* from Caddy
   error:
     whitelabel:
       enabled: false

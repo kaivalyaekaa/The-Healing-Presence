@@ -10,11 +10,13 @@ spring:
     password: ""
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: create-drop      # Hibernate manages schema in tests; Flyway is disabled
     database-platform: org.hibernate.dialect.H2Dialect
   sql:
     init:
       mode: never
+  flyway:
+    enabled: false                # tests use Hibernate create-drop; production uses Flyway
   mail:
     host: localhost
     port: 2525

@@ -230,11 +230,38 @@
         });
     }
 
+    // ---------- Premium scroll-fade-in (Intersection Observer) ----------
+    function bindScrollReveal() {
+        // Respect user motion preferences
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        if (!('IntersectionObserver' in window)) return;
+
+        const observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('in-view');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.12, rootMargin: '0px 0px -10% 0px' });
+
+        const selectors = [
+            '.service-card', '.feature-card', '.therapist-card', '.testimonial-card',
+            '.big-service-card', '.therapy-hero-photo', '.therapy-workshop-photo',
+            '.training-card', '.vasudha-photo', '.founders-photo'
+        ];
+        document.querySelectorAll(selectors.join(', ')).forEach(function (el) {
+            el.classList.add('thp-reveal');
+            observer.observe(el);
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('form[data-thp-ajax]').forEach(bindAjaxForm);
         bindFaq();
         bindImageFallback();
         highlightActiveNav();
+        bindScrollReveal();
 
         const flashToast = document.querySelector('meta[name="thp-flash"]');
         if (flashToast && flashToast.content) {

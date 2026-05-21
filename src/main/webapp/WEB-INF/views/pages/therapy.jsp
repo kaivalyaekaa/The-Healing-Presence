@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <%@ taglib prefix="t" tagdir="/WEB-INF/tags" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
@@ -137,7 +138,10 @@
                                 <div class="body">
                                     <span class="title">${th.title}</span>
                                     <h4 class="font-serif mt-2">${th.name}</h4>
-                                    <p class="small text-muted mb-0">${th.bio}</p>
+                                    <c:if test="${not empty th.credentialsLine}">
+                                        <span class="credential-tag">${th.credentialsLine}</span>
+                                    </c:if>
+                                    <p class="small text-muted mb-0 mt-2">${th.bio}</p>
                                 </div>
                             </div>
                         </div>
@@ -225,7 +229,19 @@
                                     <c:forEach begin="1" end="${ts.rating}"><i class="bi bi-star-fill"></i></c:forEach>
                                 </div>
                                 <blockquote>&ldquo;${ts.body}&rdquo;</blockquote>
-                                <cite>&mdash; ${ts.clientName}</cite>
+                                <div class="testimonial-author">
+                                    <c:choose>
+                                        <c:when test="${not empty ts.avatarPath}">
+                                            <img src="<c:url value='${ts.avatarPath}'/>" alt="${ts.clientName}" class="testimonial-avatar">
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="testimonial-avatar testimonial-avatar-initials">
+                                                ${fn:toUpperCase(fn:substring(ts.clientName,0,1))}
+                                            </span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                    <cite>&mdash; ${ts.clientName}</cite>
+                                </div>
                             </div>
                         </div>
                     </c:forEach>

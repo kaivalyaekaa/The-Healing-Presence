@@ -29,8 +29,11 @@
                     <div class="service-card text-start">
                         <h3>Quick links</h3>
                         <ul class="list-unstyled mt-3">
+                            <sec:authorize access="hasAnyRole('ADMIN','RECEPTIONIST')">
+                                <li class="mb-2"><a href="<c:url value='/reception'/>"><i class="bi bi-calendar-check me-2" style="color:var(--thp-gold-deep);"></i>Reception bookings panel</a></li>
+                            </sec:authorize>
                             <sec:authorize access="hasRole('ADMIN')">
-                                <li class="mb-2"><a href="<c:url value='/admin'/>"><i class="bi bi-arrow-right-short"></i>Admin home (ADMIN only)</a></li>
+                                <li class="mb-2"><a href="<c:url value='/admin/google-calendar'/>"><i class="bi bi-google me-2" style="color:var(--thp-gold-deep);"></i>Google Calendar integration</a></li>
                             </sec:authorize>
                             <li class="mb-2"><a href="<c:url value='/'/>"><i class="bi bi-arrow-right-short"></i>Back to public site</a></li>
                         </ul>

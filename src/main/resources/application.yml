@@ -27,11 +27,23 @@ spring:
       url: ldap://localhost:8389
       validation:
         enabled: false
+  flyway:
+    enabled: true
+    baseline-on-migrate: true   # adopt the existing dev DB as V1 baseline on first run
+    baseline-version: 1
+    locations: classpath:db/migration
 
 server:
   servlet:
     session:
       timeout: 30m
+
+google:
+  calendar:
+    client-id: ${GOOGLE_CLIENT_ID:}
+    client-secret: ${GOOGLE_CLIENT_SECRET:}
+    calendar-id: ${GOOGLE_CALENDAR_ID:primary}
+    redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:8080/admin/google-calendar/callback}
 
 app:
   notifications:

@@ -32,6 +32,10 @@ public class Therapist {
 
     private Integer displayOrder;
 
+    /** Short credential line shown as a chip on the therapy page (e.g. "Army veteran · Integrative therapist"). */
+    @Column(length = 120)
+    private String credentialsLine;
+
     public Therapist() {
     }
 
@@ -55,4 +59,7 @@ public class Therapist {
 
     public Integer getDisplayOrder() { return displayOrder; }
     public void setDisplayOrder(Integer displayOrder) { this.displayOrder = displayOrder; }
+
+    public String getCredentialsLine() { return credentialsLine; }
+    public void setCredentialsLine(String credentialsLine) { this.credentialsLine = credentialsLine; }
 }
