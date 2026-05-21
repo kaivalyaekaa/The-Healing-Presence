@@ -1,0 +1,73 @@
+# =====================================================================
+# Render Blueprint — one-click deploy from this repo.
+#
+# Setup:
+#   1. Sign in to render.com with GitHub
+#   2. New > Blueprint > select this repo
+#   3. Render reads this file, provisions both services + the database
+#   4. Set the secret env vars in the Render dashboard (GOOGLE_CLIENT_*,
+#      ADMIN_PASSWORD, MAIL_PASS) before the first deploy lights up
+#
+# https://render.com/docs/blueprint-spec
+# =====================================================================
+
+databases:
+  - name: thp-postgres
+    plan: free
+    databaseName: healingpresence
+    user: thp_app
+
+services:
+  - type: web
+    name: thp-web
+    runtime: docker
+    plan: free
+    region: singapore           # closest to India/Bangalore latency
+    autoDeploy: true            # redeploy on every push to main
+    healthCheckPath: /
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: SERVER_PORT
+        value: 8080
+      # ----- Database (auto-injected by Render from the postgres service above) -----
+      - key: DB_URL
+        fromDatabase:
+          name: thp-postgres
+          property: connectionString
+      - key: DB_USER
+        fromDatabase:
+          name: thp-postgres
+          property: user
+      - key: DB_PASS
+        fromDatabase:
+          name: thp-postgres
+          property: password
+      # ----- Admin credentials (set in Render dashboard, not committed) -----
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: ADMIN_PASSWORD
+        sync: false             # opaque secret; enter in Render UI
+      # ----- Mail (Gmail app password recommended) -----
+      - key: MAIL_HOST
+        value: smtp.gmail.com
+      - key: MAIL_PORT
+        value: "587"
+      - key: MAIL_USER
+        sync: false
+      - key: MAIL_PASS
+        sync: false
+      - key: APP_NOTIFY_TO
+        value: info@thehealingpresence.in
+      - key: APP_NOTIFY_FROM
+        value: noreply@thehealingpresence.in
+      # ----- Google Calendar OAuth (one-time setup; see deploy/HOSTING.md) -----
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_CALENDAR_ID
+        value: primary
+      - key: GOOGLE_REDIRECT_URI
+        # Render auto-assigns the URL; update this to the real host after first deploy.
+        value: https://thp-web.onrender.com/admin/google-calendar/callback

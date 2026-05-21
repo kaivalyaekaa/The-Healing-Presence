@@ -26,12 +26,12 @@
 html, body {
     background: var(--thp-bg);
     color: var(--thp-ink-soft);
-    /* SINGLE typographic voice across the whole site — Cormorant Garamond from
-       300 (lightest body) to 700 (display) for a unified, formal, elegant feel. */
-    font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+    /* Body: Source Sans 3 — the open-source Myriad Pro alternative.
+       Designed by Adobe as a clean, modern humanist sans for screen reading. */
+    font-family: "Source Sans 3", "Source Sans Pro", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     font-weight: 400;
-    font-size: 1.0625rem;            /* 17px body — Cormorant reads small otherwise */
-    line-height: 1.65;
+    font-size: 1.0rem;
+    line-height: 1.7;
     letter-spacing: 0;
 }
 
@@ -68,17 +68,17 @@ h1, h2, h3, h4, h5, h6, .font-serif, .display-1, .display-2, .display-3, .displa
     font-weight: 600;
 }
 
-/* Uppercase eyebrows, buttons and small captions need a tighter spacing to feel
-   intentional in a single-typeface site. */
+/* UI chrome (buttons, eyebrows, nav, form labels) uses the Source Sans 3 body
+   font with a heavier weight for hierarchy clarity. */
 .eyebrow, .section-eyebrow,
 .btn, button, .btn-thp-primary, .btn-thp-outline, .btn-thp-gold, .btn-thp-ghost,
 .thp-navbar .nav-link, .navbar-nav .nav-link,
 .thp-form label, .form-label, label {
+    font-family: "Source Sans 3", "Source Sans Pro", sans-serif;
     font-weight: 600;
 }
 
-/* Small body sizes need a hint more weight so Cormorant doesn't go too thin. */
-.small, small, .text-muted { font-weight: 500; }
+.small, small, .text-muted { font-weight: 400; }
 
 a { color: var(--thp-gold-deep); transition: color 0.2s ease; }
 a:hover { color: var(--thp-gold); }

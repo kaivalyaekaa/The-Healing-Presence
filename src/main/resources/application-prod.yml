@@ -1,20 +1,23 @@
 spring:
   datasource:
+    # URL is provider-agnostic — Render injects a Postgres URL, Oracle Cloud
+    # / Aiven inject a MySQL URL. Spring Boot + HikariCP auto-pick the driver
+    # from the URL prefix (jdbc:postgresql:// vs jdbc:mysql://) so both work
+    # from the same image without code changes.
     url: ${DB_URL:jdbc:mysql://localhost:3306/healingpresence?useSSL=false&serverTimezone=Asia/Kolkata&allowPublicKeyRetrieval=true}
-    driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${DB_USER:thp_app}
     password: ${DB_PASS:}
   jpa:
-    # Phase 2 rebuild: Flyway stripped. Hibernate owns schema in dev; in prod
-    # operators should pin JPA_DDL_AUTO=validate and run schema migrations
-    # manually until Flyway is re-introduced (see REBUILD.md at branch root).
+    # Phase 2 rebuild: Flyway stripped. In prod operators should pin
+    # JPA_DDL_AUTO=validate once the schema settles and run SQL migrations
+    # manually (or reintroduce Flyway — see REBUILD.md at repo root).
     hibernate:
       ddl-auto: ${JPA_DDL_AUTO:update}
     defer-datasource-initialization: true
     show-sql: false
+    # Hibernate dialect auto-detected from the JDBC URL — no explicit setting.
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
         jdbc.time_zone: Asia/Kolkata
   sql:
     init:

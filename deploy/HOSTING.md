@@ -13,13 +13,21 @@ A working app needs three things: a Java 21 runtime that's always-on, a MySQL da
 | **A. Switch to PostgreSQL on Render** | Add `org.postgresql:postgresql` dependency; change `spring.jpa.database-platform` to `PostgreSQLDialect`; change connection URL. Hibernate `ddl-auto: update` handles the schema on first boot. | ~30 min |
 | **B. Keep MySQL, host the DB on Aiven** | Aiven offers a 1-month MySQL free trial (then $19/mo). Render runs the Spring Boot WAR; Aiven runs MySQL. | ~20 min, DB costs after month 1 |
 
-**Steps (Sub-option A — recommended):**
-1. Sign up at https://render.com using GitHub.
-2. **New > Web Service** → pick the `kaivalyaekaa/The-Healing-Presence` repo.
-3. Runtime: Java 21. Build command: `./mvnw -DskipTests package`. Start command: `java -jar target/healing-presence.war`.
-4. Add env vars: `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `MAIL_USER`, `MAIL_PASS`, `APP_NOTIFY_TO`, `APP_NOTIFY_FROM`, `SPRING_PROFILES_ACTIVE=prod`.
-5. **New > PostgreSQL** → free plan → attach to the web service (Render injects `DATABASE_URL`).
-6. Push to `main` → first deploy completes in 5-10 min; you get `https://healing-presence.onrender.com` with TLS.
+**One-click Blueprint deploy (recommended):**
+
+The repo ships `render.yaml` + `Dockerfile` at the root. Render reads these and provisions both the web service AND the Postgres database automatically.
+
+1. Sign up at https://render.com using your GitHub account.
+2. **New > Blueprint** → select `kaivalyaekaa/The-Healing-Presence` → click **Apply**.
+3. Render shows the resources it's about to create: 1 web service (`thp-web`) + 1 Postgres database (`thp-postgres`). Click **Create new resources**.
+4. While it builds (~5-8 min on the first deploy), open the `thp-web` service settings and fill in the **opaque secrets** (every env var marked `sync: false` in `render.yaml`):
+   - `ADMIN_PASSWORD` — a strong password for the admin login
+   - `MAIL_USER` + `MAIL_PASS` — Gmail address + a Gmail "App Password" (Google Account > Security > 2FA > App passwords)
+   - `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` — from the Google Cloud Console (see the next section)
+5. After the first deploy succeeds you'll see `https://thp-web.onrender.com`. Update the Google Cloud Console's authorised redirect URI to that exact URL + `/admin/google-calendar/callback`, then update the `GOOGLE_REDIRECT_URI` env var in Render to match.
+6. **Push to main** any time after this → Render auto-redeploys.
+
+**How Postgres works on the same code:** `application-prod.yml` reads the JDBC URL from `DB_URL`. Render's `connectionString` property starts with `jdbc:postgresql://…` → Spring Boot's HikariCP picks the PostgreSQL driver (the `org.postgresql:postgresql` dependency was added) and Hibernate auto-detects the dialect. No code changes needed. Locally you keep MySQL; Render runs Postgres.
 
 ## Best long-term if you want MySQL + always-on: **Oracle Cloud Always Free** 🏆
 
@@ -41,6 +49,27 @@ A working app needs three things: a Java 21 runtime that's always-on, a MySQL da
 
 - **For the client demo this week**: deploy to **Render with PostgreSQL** (sub-option A). Fastest, no DNS hassle.
 - **For the production cut-over**: migrate to **Oracle Cloud Always Free** with MySQL (instructions further down).
+
+---
+
+# Offloading images & video to Cloudinary (optional)
+
+Cloudinary is a media CDN — it stores your images and videos and serves them through a global edge network with on-the-fly resizing. It's separate from the app host (Render runs Java; Cloudinary runs media). Free tier: 25 GB storage + 25 GB monthly bandwidth, no credit card.
+
+**Why bother?** Render's free disk evicts on every redeploy, and serving large videos (the Vasudha tour, the home-page b-roll) from the same dyno that runs Java eats memory + bandwidth. Cloudinary keeps the WAR small and the page fast.
+
+**Setup:**
+1. Sign up at https://cloudinary.com (free, no card).
+2. Dashboard → **Media Library** → upload everything under `src/main/resources/static/images/` and `src/main/resources/static/videos/`. Cloudinary returns a URL like:
+   `https://res.cloudinary.com/<your-cloud-name>/image/upload/v1716381111/therapist-upma.jpg`
+3. In the JSPs, replace `<c:url value='/images/...'/>` with the Cloudinary URL — OR add a single `${cloudinaryBase}` model attribute to `GlobalModelAttributes` and reference `${cloudinaryBase}/therapist-upma.jpg` everywhere.
+4. Delete the now-redundant `static/images/` + `static/videos/` directories to shrink the Docker image.
+
+**Cloudinary URL transforms** (the killer feature) — append parameters to auto-resize/optimize:
+- `…/image/upload/w_800,c_limit,q_auto,f_auto/therapist-upma.jpg` → 800px wide max, auto-format (WebP/AVIF where supported), auto-quality
+- Mobile users get a 30% smaller image automatically
+
+I haven't done this migration yet because it needs your Cloudinary cloud-name + API credentials. When you sign up, share the cloud-name and I can wire it through `GlobalModelAttributes` so every `<c:url value='/images/...'/>` swap is one line.
 
 ---
 

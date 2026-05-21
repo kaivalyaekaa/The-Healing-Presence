@@ -17,10 +17,13 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-    <!-- Google Fonts: single family across the whole site for a unified, formal voice. -->
+    <!-- Google Fonts:
+         Source Sans 3 — the open-source twin of Adobe's Myriad Pro
+         (Adobe designed it to be a free Myriad alternative). Modern, clean body.
+         Cormorant Garamond — elegant serif kept for headlines + display copy. -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 
     <!-- CSRF token for AJAX POSTs — main.js reads these meta tags -->
     <sec:csrfMetaTags/>
@@ -55,6 +58,7 @@
                     <li class="nav-item"><a class="nav-link" href="<c:url value='/about'/>">About</a></li>
                     <sec:authorize access="hasRole('ADMIN')">
                         <li class="nav-item"><a class="nav-link nav-link-admin" href="<c:url value='/reception'/>"><i class="bi bi-calendar-check me-1"></i>Bookings</a></li>
+                        <li class="nav-item"><a class="nav-link nav-link-admin" href="<c:url value='/admin/google-calendar'/>"><i class="bi bi-google me-1"></i>Calendar</a></li>
                     </sec:authorize>
                     <sec:authorize access="isAuthenticated()">
                         <li class="nav-item d-flex align-items-center ms-lg-2">

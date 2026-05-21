@@ -1,0 +1,14 @@
+target/
+.git/
+.idea/
+.vscode/
+*.iml
+.mvn/wrapper/maven-wrapper.jar
+node_modules/
+.DS_Store
+*.log
+.claude/
+.commit-msg.txt
+plans/
+REBUILD.md
+deploy/

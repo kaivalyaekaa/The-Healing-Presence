@@ -83,10 +83,16 @@
             <artifactId>spring-security-taglibs</artifactId>
         </dependency>
 
-        <!-- MySQL driver (runtime) -->
+        <!-- MySQL driver (Oracle Cloud / local dev) -->
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- PostgreSQL driver (Render free tier; Hibernate auto-detects dialect from JDBC URL) -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
         <!-- H2 kept as a fallback for tests / first-boot when MySQL is unavailable -->
