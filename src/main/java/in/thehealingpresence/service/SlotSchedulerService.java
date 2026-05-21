@@ -213,7 +213,7 @@ public class SlotSchedulerService {
         b.setName(dto.getClientName());
         b.setEmail(dto.getClientEmail());
         b.setPhone(dto.getClientPhone());
-        b.setTherapyType(dto.getTherapyType());
+        b.setTherapyType(dto.getTherapyType() == null ? null : dto.getTherapyType().display());
         b.setNotes(dto.getNotes());
         b.setSlotStart(slotStart);
         b.setSlotEnd(slotStart.plusHours(hours));

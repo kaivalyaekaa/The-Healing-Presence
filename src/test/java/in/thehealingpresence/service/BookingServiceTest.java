@@ -37,7 +37,7 @@ class BookingServiceTest {
                 "aadi@example.com",
                 "+91 9876543210",
                 "2026-06-01",
-                "Hypnotherapy",
+                in.thehealingpresence.enquiry.domain.TherapyType.HYPNOTHERAPY,
                 "First-time client");
 
         BookingRequest saved = bookingService.save(dto);

@@ -145,7 +145,7 @@ class SlotSchedulerServiceTest {
         d.setSlotDate(date);
         d.setSlotHour(hour);
         d.setDurationHours(duration);
-        d.setTherapyType("Hypnotherapy");
+        d.setTherapyType(in.thehealingpresence.enquiry.domain.TherapyType.HYPNOTHERAPY);
         d.setNotes("Test booking");
         return d;
     }

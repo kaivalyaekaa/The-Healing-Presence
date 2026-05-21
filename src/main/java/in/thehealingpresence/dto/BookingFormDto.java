@@ -1,7 +1,9 @@
 package in.thehealingpresence.dto;
 
+import in.thehealingpresence.enquiry.domain.TherapyType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
@@ -25,9 +27,9 @@ public class BookingFormDto {
     @Size(max = 20)
     private String preferredDate;
 
-    @NotBlank
-    @Size(max = 60)
-    private String therapyType;
+    /** Bound by {@code TherapyTypeConverter}; @NotNull catches the empty placeholder option. */
+    @NotNull(message = "Please select a therapy type")
+    private TherapyType therapyType;
 
     @Size(max = 2000)
     private String notes;
@@ -36,7 +38,7 @@ public class BookingFormDto {
     }
 
     public BookingFormDto(String name, String email, String phone, String preferredDate,
-                          String therapyType, String notes) {
+                          TherapyType therapyType, String notes) {
         this.name = name;
         this.email = email;
         this.phone = phone;
@@ -57,8 +59,8 @@ public class BookingFormDto {
     public String getPreferredDate() { return preferredDate; }
     public void setPreferredDate(String preferredDate) { this.preferredDate = preferredDate; }
 
-    public String getTherapyType() { return therapyType; }
-    public void setTherapyType(String therapyType) { this.therapyType = therapyType; }
+    public TherapyType getTherapyType() { return therapyType; }
+    public void setTherapyType(TherapyType therapyType) { this.therapyType = therapyType; }
 
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }

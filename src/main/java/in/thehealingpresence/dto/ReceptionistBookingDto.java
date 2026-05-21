@@ -1,5 +1,6 @@
 package in.thehealingpresence.dto;
 
+import in.thehealingpresence.enquiry.domain.TherapyType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -48,9 +49,8 @@ public class ReceptionistBookingDto {
     @Max(2)
     private Integer durationHours;
 
-    @NotBlank
-    @Size(max = 60)
-    private String therapyType;
+    @NotNull(message = "Please select a therapy type")
+    private TherapyType therapyType;
 
     @Size(max = 2000)
     private String notes;
@@ -76,8 +76,8 @@ public class ReceptionistBookingDto {
     public Integer getDurationHours() { return durationHours; }
     public void setDurationHours(Integer durationHours) { this.durationHours = durationHours; }
 
-    public String getTherapyType() { return therapyType; }
-    public void setTherapyType(String therapyType) { this.therapyType = therapyType; }
+    public TherapyType getTherapyType() { return therapyType; }
+    public void setTherapyType(TherapyType therapyType) { this.therapyType = therapyType; }
 
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }

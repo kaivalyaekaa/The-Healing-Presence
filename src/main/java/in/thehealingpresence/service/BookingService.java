@@ -26,7 +26,7 @@ public class BookingService {
         request.setName(dto.getName());
         request.setEmail(dto.getEmail());
         request.setPhone(dto.getPhone());
-        request.setTherapyType(dto.getTherapyType());
+        request.setTherapyType(dto.getTherapyType() == null ? null : dto.getTherapyType().display());
         request.setPreferredDate(dto.getPreferredDate());
         request.setNotes(dto.getNotes());
 
