@@ -1,15 +1,14 @@
-package in.thehealingpresence.service;
+package in.thehealingpresence.scheduling;
 
 import in.thehealingpresence.booking.BookingMapper;
+import in.thehealingpresence.booking.domain.Booking;
 import in.thehealingpresence.booking.event.BookingCreatedEvent;
 import in.thehealingpresence.domain.BookingRequest;
 import in.thehealingpresence.domain.BookingSource;
 import in.thehealingpresence.domain.SubmissionStatus;
 import in.thehealingpresence.dto.ReceptionistBookingDto;
 import in.thehealingpresence.repository.BookingRequestRepository;
-import in.thehealingpresence.scheduler.OfficeHours;
-import in.thehealingpresence.scheduler.TimeSlot;
-import in.thehealingpresence.scheduler.TimeSlot.SlotStatus;
+import in.thehealingpresence.shared.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -145,26 +144,24 @@ public class SlotSchedulerService {
      */
     @Transactional(readOnly = true)
     public boolean canBook(LocalDateTime start, int hours) {
-        return validate(start, hours).isEmpty();
+        return checkAvailability(start, hours).isEmpty();
     }
 
     /**
-     * Returns a list of human-readable validation problems with the proposed booking.
-     * Empty list means the booking is valid.
+     * Returns the first {@link BookingFailure} that blocks the requested slot,
+     * or empty if the slot is bookable. Used internally by {@link #canBook} and
+     * {@link #tryBook(ReceptionistBookingDto)}.
      */
     @Transactional(readOnly = true)
-    public List<String> validate(LocalDateTime start, int hours) {
-        List<String> problems = new ArrayList<>();
+    public Optional<BookingFailure> checkAvailability(LocalDateTime start, int hours) {
         if (hours != 1 && hours != 2) {
-            problems.add("Duration must be 1 or 2 hours.");
-            return problems;
+            return Optional.of(BookingFailure.INVALID_DURATION);
         }
         int startHour = start.getHour();
 
         // 1) Slot start must be a valid office hour.
         if (!OfficeHours.validStartHours().contains(startHour)) {
-            problems.add("Slot start time (" + start.toLocalTime() + ") is outside office hours or during lunch.");
-            return problems;
+            return Optional.of(BookingFailure.OUTSIDE_HOURS);
         }
 
         // 2) The window [start, start+hours) must not overlap lunch.
@@ -173,41 +170,39 @@ public class SlotSchedulerService {
         LocalTime lunchStart = LocalTime.of(OfficeHours.LUNCH_START, 0);
         LocalTime lunchEnd = LocalTime.of(OfficeHours.LUNCH_END, 0);
         if (start.toLocalTime().isBefore(lunchEnd) && end.toLocalTime().isAfter(lunchStart)) {
-            problems.add("Cannot book " + hours + " hours at " + formatHour(startHour)
-                    + " — would cross the 1–2 PM lunch break.");
+            return Optional.of(BookingFailure.LUNCH_CROSSOVER);
         }
 
         // 3) The end must be at or before close.
         if (end.toLocalTime().isAfter(LocalTime.of(OfficeHours.CLOSE_HOUR, 0))
-                || (end.toLocalDate().isAfter(start.toLocalDate()))) {
-            problems.add("Cannot book " + hours + " hours at " + formatHour(startHour)
-                    + " — would extend past office close at " + OfficeHours.CLOSE_HOUR + ":00.");
+                || end.toLocalDate().isAfter(start.toLocalDate())) {
+            return Optional.of(BookingFailure.CROSSES_CLOSE);
         }
 
         // 4) No overlap with an existing non-cancelled booking.
-        List<BookingRequest> overlapping = bookingRepository.findOverlapping(start, end);
-        if (!overlapping.isEmpty()) {
-            problems.add("Slot conflicts with an existing booking at "
-                    + overlapping.get(0).getSlotStart().toLocalTime() + ".");
+        if (!bookingRepository.findOverlapping(start, end).isEmpty()) {
+            return Optional.of(BookingFailure.OVERLAPS_EXISTING);
         }
 
-        return problems;
+        return Optional.empty();
     }
 
     // -------------------------------------------------------------- create booking --
 
     /**
-     * Validate, persist, and publish event. Status defaults to {@link SubmissionStatus#CONFIRMED}.
-     * Throws {@link IllegalArgumentException} listing problems if validation fails.
+     * Validate, persist, and publish event. Returns a {@link Result} carrying
+     * either the saved {@link Booking} (success) or the {@link BookingFailure}
+     * code (rejection). Exceptions are reserved for persistence / programming
+     * errors, not for business rules.
      */
     @Transactional
-    public BookingRequest createReceptionistBooking(ReceptionistBookingDto dto) {
+    public Result<Booking, BookingFailure> tryBook(ReceptionistBookingDto dto) {
         LocalDateTime slotStart = dto.getSlotDate().atTime(dto.getSlotHour(), 0);
         int hours = dto.getDurationHours();
 
-        List<String> problems = validate(slotStart, hours);
-        if (!problems.isEmpty()) {
-            throw new IllegalArgumentException(String.join(" ", problems));
+        Optional<BookingFailure> failure = checkAvailability(slotStart, hours);
+        if (failure.isPresent()) {
+            return Result.failure(failure.get());
         }
 
         BookingRequest b = new BookingRequest();
@@ -228,8 +223,25 @@ public class SlotSchedulerService {
 
         BookingRequest saved = bookingRepository.save(b);
         // Publish the domain event (carries Booking, not BookingRequest) so listeners stay persistence-ignorant.
-        eventPublisher.publishEvent(new BookingCreatedEvent(BookingMapper.toDomain(saved)));
-        return saved;
+        Booking domain = BookingMapper.toDomain(saved);
+        eventPublisher.publishEvent(new BookingCreatedEvent(domain));
+        return Result.success(domain);
+    }
+
+    /**
+     * @deprecated transitional wrapper — call {@link #tryBook(ReceptionistBookingDto)}
+     *             and pattern-match on the result instead. Throws on failure to keep
+     *             the legacy controller path working until R7 lands.
+     */
+    @Deprecated(forRemoval = true)
+    @Transactional
+    public BookingRequest createReceptionistBooking(ReceptionistBookingDto dto) {
+        Result<Booking, BookingFailure> result = tryBook(dto);
+        if (result.isFailure()) {
+            throw new IllegalArgumentException(result.error().userMessage());
+        }
+        // Convert the domain Booking back to the entity for legacy callers.
+        return BookingMapper.toPersistence(result.value());
     }
 
     /** Cancel an existing booking — frees the slot back up. */
@@ -241,11 +253,4 @@ public class SlotSchedulerService {
         });
     }
 
-    // -------------------------------------------------------------- helpers --
-
-    private static String formatHour(int hour) {
-        int display = (hour == 0) ? 12 : (hour > 12 ? hour - 12 : hour);
-        String suffix = hour < 12 ? "AM" : "PM";
-        return display + " " + suffix;
-    }
 }

@@ -1,4 +1,4 @@
-package in.thehealingpresence.scheduler;
+package in.thehealingpresence.scheduling;
 
 import java.util.List;
 
