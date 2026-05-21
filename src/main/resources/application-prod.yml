@@ -38,6 +38,6 @@ server:
 
 logging:
   level:
-    com.healingpresence: INFO
+    in.thehealingpresence: INFO
     org.springframework: WARN
     org.hibernate: WARN
